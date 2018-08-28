@@ -1,0 +1,834 @@
+[
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "pollExists",
+    "outputs": [
+      {
+        "name": "exists",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voter",
+        "type": "address"
+      }
+    ],
+    "name": "didReveal",
+    "outputs": [
+      {
+        "name": "revealed",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "commitPeriodActive",
+    "outputs": [
+      {
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revealPeriodActive",
+    "outputs": [
+      {
+        "name": "active",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "VOTE_AGAINST",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "commitPeriodStartedTimestamp",
+    "outputs": [
+      {
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getVoteCounts",
+    "outputs": [
+      {
+        "name": "numForVotes",
+        "type": "uint256"
+      },
+      {
+        "name": "numAgainstVotes",
+        "type": "uint256"
+      },
+      {
+        "name": "numCommittedButNotRevealedVotes",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getVoters",
+    "outputs": [
+      {
+        "name": "voters",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "MAX_REVEAL_DURATION_IN_SECONDS",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voter",
+        "type": "address"
+      }
+    ],
+    "name": "didCommit",
+    "outputs": [
+      {
+        "name": "committed",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "rbac",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voter",
+        "type": "address"
+      }
+    ],
+    "name": "getVote",
+    "outputs": [
+      {
+        "name": "vote",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "MAX_COMMIT_DURATION_IN_SECONDS",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voter",
+        "type": "address"
+      }
+    ],
+    "name": "getCommitHash",
+    "outputs": [
+      {
+        "name": "commitHash",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "VOTE_FOR",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "pollMap",
+    "outputs": [
+      {
+        "name": "commitPeriodStartedAt",
+        "type": "uint256"
+      },
+      {
+        "name": "commitDeadline",
+        "type": "uint256"
+      },
+      {
+        "name": "commitsHaltedAt",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDuraton",
+        "type": "uint256"
+      },
+      {
+        "name": "revealDeadline",
+        "type": "uint256"
+      },
+      {
+        "name": "revealsHaltedAt",
+        "type": "uint256"
+      },
+      {
+        "name": "votesFor",
+        "type": "uint256"
+      },
+      {
+        "name": "votesAgainst",
+        "type": "uint256"
+      },
+      {
+        "name": "votesCommittedButNotRevealed",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_terminationDate",
+        "type": "uint256"
+      }
+    ],
+    "name": "isExpired",
+    "outputs": [
+      {
+        "name": "expired",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revealPeriodStartedTimestamp",
+    "outputs": [
+      {
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "pollEnded",
+    "outputs": [
+      {
+        "name": "ended",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "name": "_rbac",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "instrumentAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "payloadHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RevealPeriodStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "name": "secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "VoteCommitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "secretHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "choice",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "voter",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "revealer",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "votesFor",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "votesAgainst",
+        "type": "uint256"
+      }
+    ],
+    "name": "VoteRevealed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "creator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "commitDeadline",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "revealDuraton",
+        "type": "uint256"
+      }
+    ],
+    "name": "PollCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "haltedBy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "CommitPeriodHalted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "haltedBy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "RevealPeriodHalted",
+    "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "newContractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferParentAddress",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "getPollIdentifier",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_secretHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "commitVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instruments",
+        "type": "address[]"
+      },
+      {
+        "name": "_dataIdentifiers",
+        "type": "bytes32[]"
+      },
+      {
+        "name": "_payloadHashes",
+        "type": "bytes32[]"
+      },
+      {
+        "name": "_secretHashes",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "commitVotes",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voter",
+        "type": "address"
+      },
+      {
+        "name": "_voteOption",
+        "type": "uint256"
+      },
+      {
+        "name": "_salt",
+        "type": "uint256"
+      }
+    ],
+    "name": "revealVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voteOption",
+        "type": "uint256"
+      },
+      {
+        "name": "_salt",
+        "type": "uint256"
+      }
+    ],
+    "name": "revealMyVote",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_voters",
+        "type": "address[]"
+      },
+      {
+        "name": "_voteOptions",
+        "type": "uint256[]"
+      },
+      {
+        "name": "_salts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "revealVotes",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "_commitDuration",
+        "type": "uint256"
+      },
+      {
+        "name": "_revealDuration",
+        "type": "uint256"
+      }
+    ],
+    "name": "startPoll",
+    "outputs": [
+      {
+        "name": "pollID",
+        "type": "bytes32"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "haltCommitPeriod",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "haltRevealPeriod",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

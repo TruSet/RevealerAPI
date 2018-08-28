@@ -1,0 +1,7 @@
+{
+  postgresUri: "postgresql://postgres:postgres@localhost/postgres?sslmode=disable",
+  ethereumIpc: "/Users/neil/Library/Ethereum/geth.ipc",
+  ethereumRpc: "http://localhost:8565",
+  ethereumWs: "ws://localhost:8566",
+  commitRevealVotingContractAddress: "0xbead557b123f75fb34a1609144acef777f6c8a5f",
+}

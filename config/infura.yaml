@@ -1,0 +1,6 @@
+{
+  postgresUri: "postgresql://postgres:postgres@localhost/postgres?sslmode=disable",
+  ethereumRpc: "https://rinkeby.infura.io/DPMnSwvrMeMKAo39FbFp",
+  ethereumWs: "wss://rinkeby.infura.io/ws",
+  commitRevealVotingContractAddress: "0xa2dac4b6f64983b59bb39e992454a18dc80ff517",
+}
