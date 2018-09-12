@@ -7,14 +7,50 @@ import (
    "fmt"
    "github.com/gin-gonic/gin"
    "github.com/stretchr/testify/assert"
+   "github.com/miguelmota/go-solidity-sha3"
    "github.com/TruSet/RevealerAPI/database"
-   //"github.com/TruSet/RevealerAPI/events"
    "bytes"
-   //"net/url"
+   "encoding/hex"
 )
 
-func TestRevealerAPI(t *testing.T) {
-	 postgresUri := "postgresql://postgres:postgres@localhost/postgres?sslmode=disable"
+var postgresUri = "postgresql://postgres:postgres@localhost/postgres?sslmode=disable"
+var router = SetupRouter()
+
+func requestBodyBuffer(jsonStr string) (*bytes.Buffer) {
+   return bytes.NewBuffer([]byte(jsonStr))
+}
+
+func TestInvalidCommitment(t *testing.T) {
+   db := SetupDB(postgresUri)
+   defer db.Close()
+   database.InitDb(db)
+
+   test_voteOption := 1
+   test_salt := 666
+   test_pollID := "1234"
+   test_voterAddress := "0x1234"
+
+   var jsonStr = fmt.Sprintf(
+     "{\"pollID\":\"%s\", \"voterAddress\": \"%s\", \"commitHash\": \"%s\", \"voteOption\": %d, \"salt\": %d}",
+     test_pollID,
+     test_voterAddress,
+     "NotAValidCommitHash",
+     test_voteOption,
+     test_salt,
+   )
+
+   req, _ := http.NewRequest("POST", "/revealer/v0.1/commitments", requestBodyBuffer(jsonStr))
+   req.Header.Set("Content-Type", "application/json")
+
+   w := httptest.NewRecorder()
+   router.ServeHTTP(w, req)
+
+   // the request gives a 406
+   assert.Equal(t, http.StatusNotAcceptable, w.Code)
+
+}
+
+func TestValidCommitment(t *testing.T) {
    db := SetupDB(postgresUri)
    defer db.Close()
    database.InitDb(db)
@@ -25,26 +61,27 @@ func TestRevealerAPI(t *testing.T) {
       "status": http.StatusCreated,
       "message": "vote will be revealed when voting closes",
    }
-   // Grab our router
-   router := SetupRouter()
 
+   test_voteOption := 1
+   test_salt := 666
    test_pollID := "1234"
    test_voterAddress := "0x1234"
-   test_commitHash := "HASH"
-   test_voteOption := "2"
-   test_salt := "666"
+
+   test_commitHash := solsha3.SoliditySHA3(
+    solsha3.Uint256(test_voteOption),
+    solsha3.Uint256(test_salt),
+  )
 
    var jsonStr = fmt.Sprintf(
-     "{\"pollID\":\"%s\", \"voterAddress\": \"%s\", \"commitHash\": \"%s\", \"voteOption\": %s, \"salt\": %s}",
+     "{\"pollID\":\"%s\", \"voterAddress\": \"%s\", \"commitHash\": \"%s\", \"voteOption\": %d, \"salt\": %d}",
      test_pollID,
      test_voterAddress,
-     test_commitHash,
+     hex.EncodeToString(test_commitHash),
      test_voteOption,
      test_salt,
    )
-   var requestBody = bytes.NewBuffer([]byte(jsonStr)) 
 
-   req, _ := http.NewRequest("POST", "/revealer/v0.1/commitments", requestBody)
+   req, _ := http.NewRequest("POST", "/revealer/v0.1/commitments", requestBodyBuffer(jsonStr))
    req.Header.Set("Content-Type", "application/json")
 
    w := httptest.NewRecorder()
@@ -67,9 +104,13 @@ func TestRevealerAPI(t *testing.T) {
 
 
    var commitment database.Commitment;
-   database.Db.Where("poll_id = ? and voter_address = ?",
-   test_pollID, test_voterAddress).First(&commitment)
+   database.Db.Where(
+     "poll_id = ? and voter_address = ? and commit_hash = ?",
+     test_pollID,
+     test_voterAddress,
+     hex.EncodeToString(test_commitHash),
+   ).Last(&commitment)
 
-   assert.True(t, true)
+   assert.True(t, commitment.CommitHash == hex.EncodeToString(test_commitHash))
 
 }

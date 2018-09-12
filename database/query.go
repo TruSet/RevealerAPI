@@ -4,11 +4,10 @@ import (
 	//"fmt"
   //"strconv"
   "net/http"
-  //"log"
+  "encoding/hex"
 
-  //"github.com/TruSet/RevealerAPI/database/common"
+  "github.com/miguelmota/go-solidity-sha3"
 	"github.com/gin-gonic/gin"
-	//"github.com/jinzhu/gorm"
 )
 
 type CommitmentBody struct {
@@ -23,8 +22,15 @@ func StoreCommitment(c *gin.Context) {
   var commitmentBody CommitmentBody
   c.BindJSON(&commitmentBody)
 
-  // TODO verify valid log
-  //c.AbortWithStatus(404)
+  commitHash := solsha3.SoliditySHA3(
+    solsha3.Uint256(commitmentBody.VoteOption),
+    solsha3.Uint256(commitmentBody.Salt),
+  )
+
+  if (hex.EncodeToString(commitHash) != commitmentBody.CommitHash) {
+    c.AbortWithStatus(http.StatusNotAcceptable)
+    return
+  }
 
   commitment := Commitment{
     PollID:    commitmentBody.PollID,
@@ -33,9 +39,8 @@ func StoreCommitment(c *gin.Context) {
     VoteOption: commitmentBody.VoteOption,
     Salt: commitmentBody.Salt,
   }
-	Db.Debug().Create(&commitment)
+	Db.Create(&commitment)
 
   
-	//log.Println(fmt.Sprintf("returning with status created %v mode...", *environment))
   c.JSON(http.StatusCreated, gin.H{"message": "vote will be revealed when voting closes"})
 }
