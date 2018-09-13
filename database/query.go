@@ -4,6 +4,7 @@ import (
   "net/http"
   "encoding/hex"
   "math/big"
+  "log"
 
   "github.com/miguelmota/go-solidity-sha3"
 	"github.com/gin-gonic/gin"
@@ -39,6 +40,7 @@ func StoreCommitment(c *gin.Context) {
     VoteOption: uint8(commitmentBody.VoteOption),
     Salt: uint64(commitmentBody.Salt),
   }
+  log.Println(Db)
 	Db.Debug().Create(&commitment)
 
   
