@@ -5,6 +5,7 @@ import (
    "net/http/httptest"
    "testing"
    "fmt"
+   "math/big"
    "github.com/gin-gonic/gin"
    "github.com/stretchr/testify/assert"
    "github.com/miguelmota/go-solidity-sha3"
@@ -68,15 +69,17 @@ func TestValidCommitment(t *testing.T) {
    test_voterAddress := "0x1234"
 
    test_commitHash := solsha3.SoliditySHA3(
-    solsha3.Uint256(test_voteOption),
-    solsha3.Uint256(test_salt),
+    solsha3.Uint256(big.NewInt(int64(test_voteOption))),
+    solsha3.Uint256(big.NewInt(int64(test_salt))),
   )
+
+  calculatedCommitHash := "0x" + hex.EncodeToString(test_commitHash)
 
    var jsonStr = fmt.Sprintf(
      "{\"pollID\":\"%s\", \"voterAddress\": \"%s\", \"commitHash\": \"%s\", \"voteOption\": %d, \"salt\": %d}",
      test_pollID,
      test_voterAddress,
-     hex.EncodeToString(test_commitHash),
+     calculatedCommitHash,
      test_voteOption,
      test_salt,
    )

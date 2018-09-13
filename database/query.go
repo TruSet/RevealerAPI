@@ -1,10 +1,9 @@
 package database
 
 import (
-	//"fmt"
-  //"strconv"
   "net/http"
   "encoding/hex"
+  "math/big"
 
   "github.com/miguelmota/go-solidity-sha3"
 	"github.com/gin-gonic/gin"
@@ -14,8 +13,8 @@ type CommitmentBody struct {
   PollID string `json:"pollID"`
   VoterAddress string `json:"voterAddress"`
   CommitHash string `json:"commitHash"`
-  VoteOption uint8 `json:"voteOption"`
-  Salt uint64 `json:"salt"`
+  VoteOption int64 `json:"voteOption"`
+  Salt int64 `json:"salt"`
 }
 
 func StoreCommitment(c *gin.Context) {
@@ -23,11 +22,12 @@ func StoreCommitment(c *gin.Context) {
   c.BindJSON(&commitmentBody)
 
   commitHash := solsha3.SoliditySHA3(
-    solsha3.Uint256(commitmentBody.VoteOption),
-    solsha3.Uint256(commitmentBody.Salt),
+    solsha3.Uint256(big.NewInt(commitmentBody.VoteOption)),
+    solsha3.Uint256(big.NewInt(commitmentBody.Salt)),
   )
 
-  if (hex.EncodeToString(commitHash) != commitmentBody.CommitHash) {
+  calculatedCommitHash := "0x" + hex.EncodeToString(commitHash)
+  if (calculatedCommitHash != commitmentBody.CommitHash) {
     c.AbortWithStatus(http.StatusNotAcceptable)
     return
   }
@@ -36,8 +36,8 @@ func StoreCommitment(c *gin.Context) {
     PollID:    commitmentBody.PollID,
     VoterAddress: commitmentBody.VoterAddress,
     CommitHash: commitmentBody.CommitHash,
-    VoteOption: commitmentBody.VoteOption,
-    Salt: commitmentBody.Salt,
+    VoteOption: uint8(commitmentBody.VoteOption),
+    Salt: uint64(commitmentBody.Salt),
   }
 	Db.Create(&commitment)
 
