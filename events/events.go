@@ -59,8 +59,10 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 
     // TODO
     // fetch commitments
-    //commitments := fetchCommitments(revealStarted.PollID)
+    commitments := fetchCommitments(revealStarted.PollID)
+    log.Println(commitments)
     // call out to abi for each one to reveal
+    //revealCommitments(commitments)
 	default:
 		log.Fatalf("UNEXPECTED: log from address %x with topics %x and data %x\n", l.Address, l.Topics, l.Data)
 	}
@@ -73,9 +75,10 @@ func fetchCommitments(pollID string) []database.Commitment {
 }
 
 func revealCommitments(commiments []database.Commitment) {
-  //var commitRevealVoting = eth.contract(CommitRevealVotingABI).at(commitRevealVotingContractAddress);
+  //var commitRevealVoting = bind.NewBoundCountract(commitRevealVotingContractAddress, CommitRevealVotingABI)
   //for i := 0; i < len(commitments); i++ {
     //commitment := commitments[i]
+    //log.Println(commitment)
     //commitRevealVoting.revealCommitment(commitment.PiollID, commitment.VoterAddress, commitment.VoteOption, commitment.Salt).sendTransaction({from:eth.accounts[0]})
   //}
 }
