@@ -14,18 +14,16 @@ import (
    "encoding/hex"
 )
 
-var postgresUri = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+var postgresUri = "postgresql://postgres@localhost:5432/postgres?sslmode=disable"
 var router = SetupRouter()
+var db = SetupDB(postgresUri)
 
 func requestBodyBuffer(jsonStr string) (*bytes.Buffer) {
    return bytes.NewBuffer([]byte(jsonStr))
 }
 
 func TestInvalidCommitment(t *testing.T) {
-   db := SetupDB(postgresUri)
-   defer db.Close()
    database.InitDb(db)
-
    test_voteOption := 1
    test_salt := 666
    test_pollID := "1234"
@@ -52,11 +50,7 @@ func TestInvalidCommitment(t *testing.T) {
 }
 
 func TestValidCommitment(t *testing.T) {
-   db := SetupDB(postgresUri)
-   defer db.Close()
    database.InitDb(db)
-
-  
    // Build our expected body
    body := gin.H{
       "status": http.StatusCreated,

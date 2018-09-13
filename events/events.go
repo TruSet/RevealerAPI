@@ -19,16 +19,27 @@ import (
 var (
 	commitRevealVotingContractAddress                     string
 	filter                                                ethereum.FilterQuery
+  PollCreatedLogTopic               common.Hash
 	CommitPeriodHaltedLogTopic        common.Hash
+	RevealPeriodHaltedLogTopic        common.Hash
+	VoteCommittedLogTopic        common.Hash
+	VoteRevealedLogTopic        common.Hash
 )
+
+func getLogTopic(eventSignature string) (common.Hash) {
+  return common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String(eventSignature))))
+}
 
 func Init(commitRevealVotingAddress string) {
 	commitRevealVotingContractAddress = commitRevealVotingAddress
 
   //TODO correct this
   //CommitPeriodHaltedLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
-  CommitPeriodHaltedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("CommitPeriodHalted(bytes32,address,uint)"))))
-  log.Println("LOG TOPIC", CommitPeriodHaltedLogTopic)
+  VoteCommittedLogTopic = getLogTopic("VoteCommitted(bytes32,address,bytes32)")
+  VoteRevealedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)"))))
+  CommitPeriodHaltedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("CommitPeriodHalted(bytes32,address,uint256)"))))
+  RevealPeriodHaltedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("RevealPeriodHalted(bytes32,address,uint256)"))))
+  PollCreatedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("PollCreated(bytes32,address,uint256,uint256)"))))
 
 	// TODO: for now, our filter makes no attempt to skip blocks already processed.
 	//       this may be functionally OK because the database contraints prevent duplicate rows
@@ -38,9 +49,9 @@ func Init(commitRevealVotingAddress string) {
 		Addresses: []common.Address{common.HexToAddress(commitRevealVotingContractAddress)},
 		FromBlock: big.NewInt(0),
 		ToBlock:   nil, // Latest block
-    //Topics:    nil, // Match any topic, for testing
-    Topics: [][]common.Hash{{
-      CommitPeriodHaltedLogTopic}},
+    Topics:    nil, // Match any topic, for testing
+    //Topics: [][]common.Hash{{
+      //CommitPeriodHaltedLogTopic}},
 	}
 }
 
@@ -53,13 +64,16 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 		log.Fatalf("Found removed flag on log %+v", l)
 	}
 
-  log.Println(l.Topics[0])
 	switch l.Topics[0] {
 	case CommitPeriodHaltedLogTopic:
     var revealStarted CommitPeriodHaltedLog
     //revealStarted.PollID = l.Topics[1]
 
-    unpackCommitRevealVoting(&revealStarted, "CommitPeriodHaltedLog", l)
+    unpackCommitRevealVoting(&revealStarted, "CommitPeriodHalted", l)
+
+    log.Println("REVEAL PERIOD STARTED: log from address %x", l.Address)
+    log.Println("########################### REVEAL STARTED ##################################")
+    log.Println(revealStarted)
 
     // TODO
     // fetch commitments
@@ -67,14 +81,22 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
     log.Println(commitments)
     // call out to abi for each one to reveal
     //revealCommitments(commitments)
+	case PollCreatedLogTopic:
+      log.Println("POLL CREATED")
+	case RevealPeriodHaltedLogTopic:
+      log.Println("REVEAL PERIOD HALTED")
+	case VoteCommittedLogTopic:
+      log.Println("VOTE COMMITTED")
+  case VoteRevealedLogTopic:
+      log.Println("VOTE REVEALED")
 	default:
-		log.Fatalf("UNEXPECTED: log from address %x with topics %x and data %x\n", l.Address, l.Topics, l.Data)
+		log.Println("UNEXPECTED: log with topics %x\n", l.Topics)
 	}
 }
 
 func fetchCommitments(pollID string) []database.Commitment {
   var commitments []database.Commitment
-  database.Db.Where("poll_id = ? and voter_address = ?", pollID).Find(&commitments)
+  database.Db.Where("poll_id = ?", pollID).Find(&commitments)
   return commitments
 }
 

@@ -3,7 +3,7 @@ package events
 import (
 	"fmt"
 	"io/ioutil"
-	//"math/big"
+  "math/big"
 	"path/filepath"
 	"strings"
 
@@ -15,7 +15,7 @@ type CommitPeriodHaltedLog struct {
 	// N.B. Field names must match those used in the smart contract!
 	PollID               string
 	HaltedBy common.Address
-	Timestamp                uint
+	Timestamp                *big.Int
 }
 
 func (l CommitPeriodHaltedLog) String() string {
@@ -25,7 +25,7 @@ func (l CommitPeriodHaltedLog) String() string {
 var CommitRevealVotingABI abi.ABI
 
 func init() {
-	createABIFromPath(&CommitRevealVotingABI, "./events/CommitRevealVoting.abi")
+	createABIFromPath(&CommitRevealVotingABI, "./events/TruSetCommitRevealVoting.abi")
 }
 
 func createABIFromPath(destABI *abi.ABI, _path string) {
