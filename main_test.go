@@ -5,6 +5,7 @@ import (
    "net/http/httptest"
    "testing"
    "fmt"
+   "log"
    "math/big"
    "github.com/gin-gonic/gin"
    "github.com/stretchr/testify/assert"
@@ -14,7 +15,7 @@ import (
    "encoding/hex"
 )
 
-var postgresUri = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+var postgresUri = "postgresql://postgres@localhost:5432/postgres?sslmode=disable"
 var router = SetupRouter()
 
 func requestBodyBuffer(jsonStr string) (*bytes.Buffer) {
@@ -114,6 +115,7 @@ func TestValidCommitment(t *testing.T) {
      hex.EncodeToString(test_commitHash),
    ).Last(&commitment)
 
+   log.Println(commitment)
    assert.True(t, commitment.CommitHash == hex.EncodeToString(test_commitHash))
 
 }
