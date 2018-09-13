@@ -17,14 +17,14 @@ import (
 var (
 	commitRevealVotingContractAddress                     string
 	filter                                                ethereum.FilterQuery
-	RevealPeriodStartLogTopic        common.Hash
+	CommitPeriodHaltedLogTopic        common.Hash
 )
 
 func Init(commitRevealVotingAddress string) {
 	commitRevealVotingContractAddress = commitRevealVotingAddress
 
   //TODO correct this
-  RevealPeriodStartLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
+  CommitPeriodHaltedLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
 
 	// TODO: for now, our filter makes no attempt to skip blocks already processed.
 	//       this may be functionally OK because the database contraints prevent duplicate rows
@@ -36,7 +36,7 @@ func Init(commitRevealVotingAddress string) {
 		ToBlock:   nil, // Latest block
 		//Topics:    nil, // Match any topic, for testing
 		Topics: [][]common.Hash{{
-      RevealPeriodStartLogTopic}},
+      CommitPeriodHaltedLogTopic}},
 	}
 }
 
@@ -49,12 +49,13 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 		log.Fatalf("Found removed flag on log %+v", l)
 	}
 
+  log.Println(l.Topics[0])
 	switch l.Topics[0] {
-	case RevealPeriodStartLogTopic:
-		//var revealStarted RevealPeriodStartLog
+	case CommitPeriodHaltedLogTopic:
+    var revealStarted CommitPeriodHaltedLog
     //revealStarted.PollID = l.Topics[1]
 
-		//unpackCommitRevealVoting(&revealStarted, "RevealPeriodStartLog", l)
+    unpackCommitRevealVoting(&revealStarted, "CommitPeriodHaltedLog", l)
 
     // TODO
     // fetch commitments

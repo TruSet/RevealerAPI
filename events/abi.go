@@ -11,15 +11,15 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type RevealPeriodStartLog struct {
+type CommitPeriodHaltedLog struct {
 	// N.B. Field names must match those used in the smart contract!
-	Creator              common.Address
-	NewInstrumentAddress common.Address
-	Ident                string
+	PollID               string
+	HaltedBy common.Address
+	Timestamp                uint
 }
 
-func (l RevealPeriodStartLog) String() string {
-	return fmt.Sprintf("{Creator: %x; Address: %x; Name: %v}", l.Creator, l.NewInstrumentAddress, l.Ident)
+func (l CommitPeriodHaltedLog) String() string {
+	return fmt.Sprintf("{PollID: %s; HaltedBy: %x; Timestamp: %v}", l.PollID, l.HaltedBy, l.Timestamp)
 }
 
 var CommitRevealVotingABI abi.ABI
