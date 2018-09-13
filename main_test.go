@@ -14,7 +14,7 @@ import (
    "encoding/hex"
 )
 
-var postgresUri = "postgresql://postgres:postgres@localhost/postgres?sslmode=disable"
+var postgresUri = "postgresql://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 var router = SetupRouter()
 
 func requestBodyBuffer(jsonStr string) (*bytes.Buffer) {
