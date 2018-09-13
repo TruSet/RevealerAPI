@@ -11,7 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/TruSet/RevealerAPI/database"
+  "github.com/miguelmota/go-solidity-sha3"
+  "github.com/TruSet/RevealerAPI/database"
+  "encoding/hex"
 )
 
 var (
@@ -24,7 +26,9 @@ func Init(commitRevealVotingAddress string) {
 	commitRevealVotingContractAddress = commitRevealVotingAddress
 
   //TODO correct this
-  CommitPeriodHaltedLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
+  //CommitPeriodHaltedLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
+  CommitPeriodHaltedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("CommitPeriodHalted(bytes32,address,uint)"))))
+  log.Println("LOG TOPIC", CommitPeriodHaltedLogTopic)
 
 	// TODO: for now, our filter makes no attempt to skip blocks already processed.
 	//       this may be functionally OK because the database contraints prevent duplicate rows
@@ -34,8 +38,8 @@ func Init(commitRevealVotingAddress string) {
 		Addresses: []common.Address{common.HexToAddress(commitRevealVotingContractAddress)},
 		FromBlock: big.NewInt(0),
 		ToBlock:   nil, // Latest block
-		//Topics:    nil, // Match any topic, for testing
-		Topics: [][]common.Hash{{
+    //Topics:    nil, // Match any topic, for testing
+    Topics: [][]common.Hash{{
       CommitPeriodHaltedLogTopic}},
 	}
 }
