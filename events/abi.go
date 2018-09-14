@@ -13,13 +13,13 @@ import (
 
 type CommitPeriodHaltedLog struct {
 	// N.B. Field names must match those used in the smart contract!
-	PollID               string
-	HaltedBy common.Address
-	Timestamp                *big.Int
+	PollID               [32]byte
+	HaltedBy             common.Address
+	Timestamp            *big.Int
 }
 
 func (l CommitPeriodHaltedLog) String() string {
-	return fmt.Sprintf("{PollID: %s; HaltedBy: %x; Timestamp: %v}", l.PollID, l.HaltedBy, l.Timestamp)
+	return fmt.Sprintf("{PollID: %x; HaltedBy: %x; Timestamp: %v}", l.PollID, l.HaltedBy, l.Timestamp)
 }
 
 var CommitRevealVotingABI abi.ABI

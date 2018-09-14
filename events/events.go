@@ -14,6 +14,7 @@ import (
   "github.com/miguelmota/go-solidity-sha3"
   "github.com/TruSet/RevealerAPI/database"
   "encoding/hex"
+  "github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 var (
@@ -71,26 +72,29 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 
     unpackCommitRevealVoting(&revealStarted, "CommitPeriodHalted", l)
 
-    log.Println("REVEAL PERIOD STARTED: log from address %x", l.Address)
-    log.Println("########################### REVEAL STARTED ##################################")
+    log.Printf(">>>> REVEAL PERIOD STARTED <<<< %x\n", l.Data)
     log.Println(revealStarted)
 
     // TODO
     // fetch commitments
-    commitments := fetchCommitments(revealStarted.PollID)
+    bytes := revealStarted.PollID[:]
+    pollString := hexutil.Encode(bytes)
+    log.Println("pollString")
+    log.Println(pollString)
+    commitments := fetchCommitments(pollString)
     log.Println(commitments)
     // call out to abi for each one to reveal
     //revealCommitments(commitments)
 	case PollCreatedLogTopic:
-      log.Println("POLL CREATED")
+      //log.Println("POLL CREATED")
 	case RevealPeriodHaltedLogTopic:
-      log.Println("REVEAL PERIOD HALTED")
+      //log.Println("REVEAL PERIOD HALTED")
 	case VoteCommittedLogTopic:
-      log.Println("VOTE COMMITTED")
+      //log.Println("VOTE COMMITTED")
   case VoteRevealedLogTopic:
-      log.Println("VOTE REVEALED")
+      //log.Println("VOTE REVEALED")
 	default:
-		log.Println("UNEXPECTED: log with topics %x\n", l.Topics)
+		log.Printf("UNEXPECTED: log with topics %x\n", l.Topics)
 	}
 }
 
