@@ -14,7 +14,7 @@ import (
   "github.com/miguelmota/go-solidity-sha3"
   "github.com/TruSet/RevealerAPI/database"
   "encoding/hex"
-  "github.com/ethereum/go-ethereum/common/hexutil"
+  //"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 var (
@@ -37,10 +37,10 @@ func Init(commitRevealVotingAddress string) {
   //TODO correct this
   //CommitPeriodHaltedLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
   VoteCommittedLogTopic = getLogTopic("VoteCommitted(bytes32,address,bytes32)")
-  VoteRevealedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)"))))
-  CommitPeriodHaltedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("CommitPeriodHalted(bytes32,address,uint256)"))))
-  RevealPeriodHaltedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("RevealPeriodHalted(bytes32,address,uint256)"))))
-  PollCreatedLogTopic = common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String("PollCreated(bytes32,address,uint256,uint256)"))))
+  VoteRevealedLogTopic = getLogTopic("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)")
+  CommitPeriodHaltedLogTopic = getLogTopic("CommitPeriodHalted(bytes32,address,uint256)")
+  RevealPeriodHaltedLogTopic = getLogTopic("RevealPeriodHalted(bytes32,address,uint256)")
+  PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint256)")
 
 	// TODO: for now, our filter makes no attempt to skip blocks already processed.
 	//       this may be functionally OK because the database contraints prevent duplicate rows
@@ -68,25 +68,20 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 	switch l.Topics[0] {
 	case CommitPeriodHaltedLogTopic:
     var revealStarted CommitPeriodHaltedLog
-    revealStarted.PollID = l.Topics[1]
+    //revealStarted.PollID = hex.EncodeToString(l.Topics[1])
+    revealStarted.PollID = l.Topics[1].Hex()
 
     unpackCommitRevealVoting(&revealStarted, "CommitPeriodHalted", l)
 
-    log.Printf(">>>> REVEAL PERIOD STARTED <<<< %x\n", l.Data)
-    log.Println(revealStarted)
+    log.Printf("REVEAL PERIOD STARTED: %x\n", l.Topics[1])
 
     // TODO
-    // fetch commitments
-    bytes := revealStarted.PollID[:]
-    pollString := hexutil.Encode(bytes)
-    log.Println("pollString")
-    log.Println(pollString)
-    commitments := fetchCommitments(pollString)
+    commitments := fetchCommitments(revealStarted.PollID)
     log.Println(commitments)
     // call out to abi for each one to reveal
     //revealCommitments(commitments)
 	case PollCreatedLogTopic:
-      //log.Println("POLL CREATED")
+    log.Printf("POLL CREATED: %x", l.Topics[1].Hex())
 	case RevealPeriodHaltedLogTopic:
       //log.Println("REVEAL PERIOD HALTED")
 	case VoteCommittedLogTopic:
@@ -118,7 +113,7 @@ func unpackCommitRevealVoting(dest interface{}, logName string, l types.Log) {
 	if err != nil {
 		fmt.Println("Failed to unpack:", err)
 	}
-	log.Printf("%v: %+v\n", logName, dest)
+	//log.Printf("%v: %+v\n", logName, dest)
 }
 
 func ProcessPastEvents(client *ethclient.Client) {

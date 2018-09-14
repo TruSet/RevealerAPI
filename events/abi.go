@@ -13,7 +13,7 @@ import (
 
 type CommitPeriodHaltedLog struct {
 	// N.B. Field names must match those used in the smart contract!
-	PollID               [32]byte
+	PollID               string
 	HaltedBy             common.Address
 	Timestamp            *big.Int
 }

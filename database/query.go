@@ -39,7 +39,7 @@ func StoreCommitment(c *gin.Context) {
     VoteOption: uint8(commitmentBody.VoteOption),
     Salt: uint64(commitmentBody.Salt),
   }
-	Db.Create(&commitment)
+	Db.Debug().Create(&commitment)
 
   
   c.JSON(http.StatusCreated, gin.H{"message": "vote will be revealed when voting closes"})
