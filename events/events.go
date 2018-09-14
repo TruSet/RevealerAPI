@@ -68,7 +68,7 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 	switch l.Topics[0] {
 	case CommitPeriodHaltedLogTopic:
     var revealStarted CommitPeriodHaltedLog
-    //revealStarted.PollID = l.Topics[1]
+    revealStarted.PollID = l.Topics[1]
 
     unpackCommitRevealVoting(&revealStarted, "CommitPeriodHalted", l)
 
