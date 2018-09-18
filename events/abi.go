@@ -2,42 +2,30 @@ package events
 
 import (
 	"fmt"
-	"io/ioutil"
-  "math/big"
-	"path/filepath"
+  //"math/big"
 	"strings"
+
+  "github.com/TruSet/RevealerAPI/contract"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type CommitPeriodHaltedLog struct {
+type RevealPeriodStartedLog struct {
 	// N.B. Field names must match those used in the smart contract!
 	PollID               string
-	HaltedBy             common.Address
-	Timestamp            *big.Int
+	InstrumentAddress    common.Address
+	DataIdentifier       [32]byte
+  PayloadHash          [32]byte
 }
 
-func (l CommitPeriodHaltedLog) String() string {
-	return fmt.Sprintf("{PollID: %x; HaltedBy: %x; Timestamp: %v}", l.PollID, l.HaltedBy, l.Timestamp)
+func (l RevealPeriodStartedLog) String() string {
+	return fmt.Sprintf("{PollID: %x; InstrumentAddress: %x;}", l.PollID, l.InstrumentAddress)
 }
 
 var CommitRevealVotingABI abi.ABI
 
 func init() {
-	createABIFromPath(&CommitRevealVotingABI, "./events/TruSetCommitRevealVoting.abi")
-}
-
-func createABIFromPath(destABI *abi.ABI, _path string) {
-	path, _ := filepath.Abs(_path)
-	file, err := ioutil.ReadFile(path)
-
-	if err != nil {
-		fmt.Errorf("Failed to read file at path ", path, ": ", err)
-	}
-
-	*destABI, err = abi.JSON(strings.NewReader(string(file)))
-	if err != nil {
-		fmt.Errorf("Invalid abi at path ", path, ": ", err)
-	}
+	//loadABI(&CommitRevealVotingABI)
+  CommitRevealVotingABI, _ = abi.JSON(strings.NewReader(contract.TruSetCommitRevealVotingABI))
 }

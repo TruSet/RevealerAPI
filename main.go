@@ -70,7 +70,7 @@ func main() {
 
 	// Read data from all past events and write them into our DB
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
-	events.Init(commitRevealVotingContractAddress)
+	events.Init(client, commitRevealVotingContractAddress)
 	events.ProcessPastEvents(client)
 
 	if poll {

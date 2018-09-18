@@ -4,56 +4,106 @@ import (
 	"context"
 	"fmt"
 	"log"
+  "strings"
+  "crypto/ecdsa"
 	"math/big"
+  "encoding/hex"
 
+  "github.com/TruSet/RevealerAPI/database"
+  "github.com/TruSet/RevealerAPI/contract"
 
-	ethereum "github.com/ethereum/go-ethereum"
+  ethereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+  "github.com/ethereum/go-ethereum/accounts/abi/bind"
+  "github.com/ethereum/go-ethereum/crypto"
+
   "github.com/miguelmota/go-solidity-sha3"
-  "github.com/TruSet/RevealerAPI/database"
-  "encoding/hex"
-  //"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+const key = "this is a key"
+
 var (
-	commitRevealVotingContractAddress                     string
+	commitRevealVotingContractAddress                     common.Address
 	filter                                                ethereum.FilterQuery
   PollCreatedLogTopic               common.Hash
 	CommitPeriodHaltedLogTopic        common.Hash
+	RevealPeriodStartedLogTopic       common.Hash
 	RevealPeriodHaltedLogTopic        common.Hash
-	VoteCommittedLogTopic        common.Hash
-	VoteRevealedLogTopic        common.Hash
+	VoteCommittedLogTopic             common.Hash
+	VoteRevealedLogTopic              common.Hash
+  instance                          *contract.TruSetCommitRevealVoting
+  boundContract                     *bind.BoundContract
+  client                            *ethclient.Client
 )
 
 func getLogTopic(eventSignature string) (common.Hash) {
   return common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String(eventSignature))))
 }
 
-func Init(commitRevealVotingAddress string) {
-	commitRevealVotingContractAddress = commitRevealVotingAddress
+func transactionOpts2(client *ethclient.Client) (*bind.TransactOpts) {
+  auth, _ := bind.NewTransactor(strings.NewReader(key), "passphrase associated with your JSON key file")
+  return auth
+}
 
-  //TODO correct this
-  //CommitPeriodHaltedLogTopic = common.HexToHash("0x4226fb316091e086ca1435e14c0c26a2d232c473f5d751d15eea24e996592dc1")
+func transactionOpts(ctx context.Context, client *ethclient.Client) (*bind.TransactOpts) {
+  privateKeyString := "f3782740e767072087ebf6a2a77730b8cc9bddc1bd078c63da511e77763dce65"
+  privateKey, err := crypto.HexToECDSA(privateKeyString)
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  publicKey := privateKey.Public()
+  publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+  if !ok {
+    log.Fatal("error casting public key to ECDSA")
+  }
+
+  fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+  log.Printf("- Setting transaction options with address %s", hexutil.Encode(fromAddress[:]))
+  nonce, err := client.PendingNonceAt(ctx, fromAddress)
+  if err != nil {
+    log.Println("Fails here")
+    log.Fatal(err)
+  }
+  gasPrice, err := client.SuggestGasPrice(context.Background())
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  auth := bind.NewKeyedTransactor(privateKey)
+  auth.Nonce = big.NewInt(int64(nonce))
+  auth.Value = big.NewInt(int64(0))     // in wei
+  auth.GasLimit = uint64(300000) // in units
+  auth.GasPrice = gasPrice
+
+  return auth
+}
+
+func Init(_client *ethclient.Client, commitRevealVotingAddress string) {
+  client := _client
+	commitRevealVotingContractAddress = common.HexToAddress(commitRevealVotingAddress)
+
   VoteCommittedLogTopic = getLogTopic("VoteCommitted(bytes32,address,bytes32)")
   VoteRevealedLogTopic = getLogTopic("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)")
   CommitPeriodHaltedLogTopic = getLogTopic("CommitPeriodHalted(bytes32,address,uint256)")
+  RevealPeriodStartedLogTopic = getLogTopic("RevealPeriodStarted(bytes32,address,bytes32,bytes32)")
   RevealPeriodHaltedLogTopic = getLogTopic("RevealPeriodHalted(bytes32,address,uint256)")
   PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint256)")
 
-	// TODO: for now, our filter makes no attempt to skip blocks already processed.
-	//       this may be functionally OK because the database contraints prevent duplicate rows
-	//       but it leads to warnings and is inefficient so it would be nice to be more selective.
-	//       When fixing, need to be mindful of chain re-orgs.
 	filter = ethereum.FilterQuery{
-		Addresses: []common.Address{common.HexToAddress(commitRevealVotingContractAddress)},
+		Addresses: []common.Address{commitRevealVotingContractAddress},
 		FromBlock: big.NewInt(0),
 		ToBlock:   nil, // Latest block
     Topics:    nil, // Match any topic, for testing
     //Topics: [][]common.Hash{{
-      //CommitPeriodHaltedLogTopic}},
+      //RevealPeriodStartedLogTopic}},
 	}
+  instance, _ = contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, client)
+
+  boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, CommitRevealVotingABI, nil, nil , nil)
 }
 
 func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
@@ -66,22 +116,17 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 	}
 
 	switch l.Topics[0] {
-	case CommitPeriodHaltedLogTopic:
-    var revealStarted CommitPeriodHaltedLog
-    //revealStarted.PollID = hex.EncodeToString(l.Topics[1])
-    revealStarted.PollID = l.Topics[1].Hex()
+	case RevealPeriodStartedLogTopic:
 
-    unpackCommitRevealVoting(&revealStarted, "CommitPeriodHalted", l)
+    revealStarted := new(contract.TruSetCommitRevealVotingRevealPeriodStarted)
+    boundContract.UnpackLog(revealStarted, "RevealPeriodStarted", l)
 
-    log.Printf("REVEAL PERIOD STARTED: %x\n", l.Topics[1])
-
-    // TODO
     commitments := fetchCommitments(revealStarted.PollID)
-    log.Println(commitments)
-    // call out to abi for each one to reveal
-    //revealCommitments(commitments)
+    RevealCommitments(ctx, commitments, revealStarted.InstrumentAddress, revealStarted.DataIdentifier, revealStarted.PayloadHash)
+	case CommitPeriodHaltedLogTopic:
+    //log.Println("COMMIT PERIOD HALTED")
 	case PollCreatedLogTopic:
-    log.Printf("POLL CREATED: %x", l.Topics[1].Hex())
+    log.Printf("[Poll Created]\t%x", l.Topics[1])
 	case RevealPeriodHaltedLogTopic:
       //log.Println("REVEAL PERIOD HALTED")
 	case VoteCommittedLogTopic:
@@ -89,23 +134,38 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
   case VoteRevealedLogTopic:
       //log.Println("VOTE REVEALED")
 	default:
-		log.Printf("UNEXPECTED: log with topics %x\n", l.Topics)
+		log.Printf("[Unexpected]\tlog with topics %x\n", l.Topics)
+		log.Println(l.Topics[0])
 	}
 }
 
-func fetchCommitments(pollID string) []database.Commitment {
+func fetchCommitments(pollID [32]byte) []database.Commitment {
   var commitments []database.Commitment
-  database.Db.Where("poll_id = ?", pollID).Find(&commitments)
+  database.Db.Where("poll_id = ?", hexutil.Encode(pollID[:])).Find(&commitments)
   return commitments
 }
 
-func revealCommitments(commiments []database.Commitment) {
-  //var commitRevealVoting = bind.NewBoundCountract(commitRevealVotingContractAddress, CommitRevealVotingABI)
-  //for i := 0; i < len(commitments); i++ {
-    //commitment := commitments[i]
-    //log.Println(commitment)
-    //commitRevealVoting.revealCommitment(commitment.PiollID, commitment.VoterAddress, commitment.VoteOption, commitment.Salt).sendTransaction({from:eth.accounts[0]})
-  //}
+func RevealCommitments(ctx context.Context, commitments []database.Commitment, instrumentAddress common.Address, dataIdentifier [32]byte, payloadHash [32]byte) {
+  //log.Println(instrumentAddress)
+  //log.Println(hexutil.Encode(dataIdentifier[:]))
+  //log.Println(hexutil.Encode(payloadHash[:]))
+
+  for i := 0; i < len(commitments); i++ {
+    commitment := commitments[i]
+    log.Printf("[Vote Revealed TODO]\t%s voted %d on %s", commitment.VoterAddress, commitment.VoteOption, commitment.PollID)
+    opts := transactionOpts2(client)
+    log.Println(opts)
+
+    // TODO this throws a segmentation fault
+    //instance.RevealVote(
+      //opts,
+      //instrumentAddress,
+      //dataIdentifier,
+      //payloadHash,
+      //common.HexToAddress(commitment.VoterAddress),
+      //big.NewInt(int64(commitment.VoteOption)),
+      //big.NewInt(int64(commitment.Salt)))
+  }
 }
 
 func unpackCommitRevealVoting(dest interface{}, logName string, l types.Log) {
