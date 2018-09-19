@@ -10,15 +10,15 @@ RUN chmod +x /usr/bin/dep
 #COPY vendor vendor
 # hacky way to get libsec bindings
 # https://github.com/ethereum/go-ethereum/issues/2738
-RUN go get -u github.com/ethereum/go-ethereum
+#RUN go get -u github.com/ethereum/go-ethereum
 #RUN dep init
 COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure --vendor-only
 COPY . .
-RUN dep ensure
+#RUN dep ensure
 #--vendor-only
 
 #RUN govendor add +external
-RUN cp -r ${GOPATH}/src/github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1 ./vendor/github.com/ethereum/go-ethereum/crypto/secp256k1/.
+#RUN cp -r ${GOPATH}/src/github.com/ethereum/go-ethereum/crypto/secp256k1/libsecp256k1 ./vendor/github.com/ethereum/go-ethereum/crypto/secp256k1/.
 #RUN govendor sync
 CMD "go run main.go -e docker"
