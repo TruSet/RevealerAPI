@@ -1,142 +1,135 @@
 package events
 
 import (
-	"context"
-	"fmt"
-	"log"
+  "context"
+  "fmt"
+  "log"
   "strings"
-  "crypto/ecdsa"
-	"math/big"
+  "math/big"
+  "time"
   "encoding/hex"
 
   "github.com/TruSet/RevealerAPI/database"
   "github.com/TruSet/RevealerAPI/contract"
 
   ethereum "github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/ethereum/go-ethereum/common/hexutil"
+  "github.com/ethereum/go-ethereum/common"
+  "github.com/ethereum/go-ethereum/core/types"
+  "github.com/ethereum/go-ethereum/ethclient"
+  "github.com/ethereum/go-ethereum/common/hexutil"
+  "github.com/ethereum/go-ethereum/accounts/abi"
   "github.com/ethereum/go-ethereum/accounts/abi/bind"
-  "github.com/ethereum/go-ethereum/crypto"
 
   "github.com/miguelmota/go-solidity-sha3"
 )
 
-const key = "this is a key"
-
 var (
-	commitRevealVotingContractAddress                     common.Address
-	filter                                                ethereum.FilterQuery
-  PollCreatedLogTopic               common.Hash
-	CommitPeriodHaltedLogTopic        common.Hash
-	RevealPeriodStartedLogTopic       common.Hash
-	RevealPeriodHaltedLogTopic        common.Hash
-	VoteCommittedLogTopic             common.Hash
-	VoteRevealedLogTopic              common.Hash
-  instance                          *contract.TruSetCommitRevealVoting
+  commitRevealVotingContractAddress                     common.Address
+  filter                                                ethereum.FilterQuery
+  votingSession                     *contract.TruSetCommitRevealVotingSession
   boundContract                     *bind.BoundContract
-  client                            *ethclient.Client
+  from common.Address
 )
+
+const key = "{\"address\":\"05bbf03bf6f3293c826bc924e7cacc7b43ed5589\",\"crypto\":{\"cipher\":\"aes-128-ctr\",\"ciphertext\":\"3dcbd47fe205399a7a59353b407f6132ac07656c4f0bd7268f1393ae8f4269f1\",\"cipherparams\":{\"iv\":\"473f6f9ff474d180fad649f653c89ac0\"},\"kdf\":\"scrypt\",\"kdfparams\":{\"dklen\":32,\"n\":262144,\"p\":1,\"r\":8,\"salt\":\"f940031c6e41f1e187877e964d4caa58d1c4789e58e174fddc06f6fb16dfeb4b\"},\"mac\":\"19fd966b0310dc91439bbf9c009b44aae2ac03d71d789fef1543bf25c103401b\"},\"id\":\"9744b359-d944-4a49-92bf-32abc657dcdd\",\"version\":3}"
 
 func getLogTopic(eventSignature string) (common.Hash) {
   return common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String(eventSignature))))
 }
 
-func transactionOpts2(client *ethclient.Client) (*bind.TransactOpts) {
-  auth, _ := bind.NewTransactor(strings.NewReader(key), "passphrase associated with your JSON key file")
+var VoteCommittedLogTopic = getLogTopic("VoteCommitted(bytes32,address,bytes32)")
+var VoteRevealedLogTopic = getLogTopic("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)")
+var CommitPeriodHaltedLogTopic = getLogTopic("CommitPeriodHalted(bytes32,address,uint256)")
+var RevealPeriodStartedLogTopic = getLogTopic("RevealPeriodStarted(bytes32,address,bytes32,bytes32)")
+var RevealPeriodHaltedLogTopic = getLogTopic("RevealPeriodHalted(bytes32,address,uint256)")
+var PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint256)")
+
+func revealTransactionOpts(client *ethclient.Client) (*bind.TransactOpts) {
+  auth, err := bind.NewTransactor(strings.NewReader(key), "")
+  log.Println("FROM", auth.From.Hex())
+  if err != nil {
+    log.Fatal(err)
+  }
   return auth
 }
 
-func transactionOpts(ctx context.Context, client *ethclient.Client) (*bind.TransactOpts) {
-  privateKeyString := "f3782740e767072087ebf6a2a77730b8cc9bddc1bd078c63da511e77763dce65"
-  privateKey, err := crypto.HexToECDSA(privateKeyString)
-  if err != nil {
-    log.Fatal(err)
-  }
+func Init(client *ethclient.Client, commitRevealVotingAddress string) {
+  commitRevealVotingContractAddress = common.HexToAddress(commitRevealVotingAddress)
 
-  publicKey := privateKey.Public()
-  publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-  if !ok {
-    log.Fatal("error casting public key to ECDSA")
-  }
-
-  fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-  log.Printf("- Setting transaction options with address %s", hexutil.Encode(fromAddress[:]))
-  nonce, err := client.PendingNonceAt(ctx, fromAddress)
-  if err != nil {
-    log.Println("Fails here")
-    log.Fatal(err)
-  }
-  gasPrice, err := client.SuggestGasPrice(context.Background())
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  auth := bind.NewKeyedTransactor(privateKey)
-  auth.Nonce = big.NewInt(int64(nonce))
-  auth.Value = big.NewInt(int64(0))     // in wei
-  auth.GasLimit = uint64(300000) // in units
-  auth.GasPrice = gasPrice
-
-  return auth
-}
-
-func Init(_client *ethclient.Client, commitRevealVotingAddress string) {
-  client := _client
-	commitRevealVotingContractAddress = common.HexToAddress(commitRevealVotingAddress)
-
-  VoteCommittedLogTopic = getLogTopic("VoteCommitted(bytes32,address,bytes32)")
-  VoteRevealedLogTopic = getLogTopic("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)")
-  CommitPeriodHaltedLogTopic = getLogTopic("CommitPeriodHalted(bytes32,address,uint256)")
-  RevealPeriodStartedLogTopic = getLogTopic("RevealPeriodStarted(bytes32,address,bytes32,bytes32)")
-  RevealPeriodHaltedLogTopic = getLogTopic("RevealPeriodHalted(bytes32,address,uint256)")
-  PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint256)")
-
-	filter = ethereum.FilterQuery{
-		Addresses: []common.Address{commitRevealVotingContractAddress},
-		FromBlock: big.NewInt(0),
-		ToBlock:   nil, // Latest block
+  filter = ethereum.FilterQuery{
+    Addresses: []common.Address{commitRevealVotingContractAddress},
+    FromBlock: big.NewInt(0),
+    ToBlock:   nil, // Latest block
     Topics:    nil, // Match any topic, for testing
     //Topics: [][]common.Hash{{
-      //RevealPeriodStartedLogTopic}},
-	}
-  instance, _ = contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, client)
+    //RevealPeriodStartedLogTopic}},
+  }
 
-  boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, CommitRevealVotingABI, nil, nil , nil)
+  votingContract, _ := contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, client)
+  opts := revealTransactionOpts(client)
+
+  votingSession = &contract.TruSetCommitRevealVotingSession{
+    Contract: votingContract,
+    TransactOpts: *opts,
+  }
+
+  from = opts.From
+  commitRevealVotingABI, _ := abi.JSON(strings.NewReader(contract.TruSetCommitRevealVotingABI))
+  boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, commitRevealVotingABI, nil, nil , nil)
 }
 
 func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
-	// log.Printf("Found log from address %x with topics %x and data %x\n", l.Address, l.Topics, l.Data)
+  // log.Printf("Found log from address %x with topics %x and data %x\n", l.Address, l.Topics, l.Data)
 
-	if l.Removed {
-		// TODO: need to handle chain re-organisations gracefully by undoing the affected database change!
-		// For now we expect this to be uncommon and would rather die than provide incorrect data
-		log.Fatalf("Found removed flag on log %+v", l)
-	}
+  if l.Removed {
+    // TODO: need to handle chain re-organisations gracefully by undoing the affected database change!
+    // For now we expect this to be uncommon and would rather die than provide incorrect data
+    log.Fatalf("Found removed flag on log %+v", l)
+  }
 
-	switch l.Topics[0] {
-	case RevealPeriodStartedLogTopic:
+  switch l.Topics[0] {
+  case RevealPeriodStartedLogTopic:
+    revealPeriodStarted := new(contract.TruSetCommitRevealVotingRevealPeriodStarted)
+    // shouldn't have to use this low level boundContract
+    boundContract.UnpackLog(revealPeriodStarted, "RevealPeriodStarted", l)
 
-    revealStarted := new(contract.TruSetCommitRevealVotingRevealPeriodStarted)
-    boundContract.UnpackLog(revealStarted, "RevealPeriodStarted", l)
+    log.Printf("[Reveal Period Started]\t%s", hexutil.Encode(revealPeriodStarted.PollID[:]))
 
-    commitments := fetchCommitments(revealStarted.PollID)
-    RevealCommitments(ctx, commitments, revealStarted.InstrumentAddress, revealStarted.DataIdentifier, revealStarted.PayloadHash)
-	case CommitPeriodHaltedLogTopic:
-    //log.Println("COMMIT PERIOD HALTED")
-	case PollCreatedLogTopic:
-    log.Printf("[Poll Created]\t%x", l.Topics[1])
-	case RevealPeriodHaltedLogTopic:
-      //log.Println("REVEAL PERIOD HALTED")
-	case VoteCommittedLogTopic:
-      //log.Println("VOTE COMMITTED")
+    RevealCommitments(client, revealPeriodStarted)
+  case CommitPeriodHaltedLogTopic:
+    commitPeriodHalted := new(contract.TruSetCommitRevealVotingCommitPeriodHalted)
+    boundContract.UnpackLog(commitPeriodHalted, "CommitPeriodHalted", l)
+
+    log.Printf("[Commit Period Halted]\t%s", hexutil.Encode(commitPeriodHalted.PollID[:]))
+  case RevealPeriodHaltedLogTopic:
+    revealPeriodHalted := new(contract.TruSetCommitRevealVotingRevealPeriodHalted)
+    boundContract.UnpackLog(revealPeriodHalted, "RevealPeriodHalted", l)
+
+    log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
+  case PollCreatedLogTopic:
+    pollCreated := new(contract.TruSetCommitRevealVotingPollCreated)
+    boundContract.UnpackLog(pollCreated, "PollCreated", l)
+
+    log.Printf("[Poll Created]\t%s", hexutil.Encode(pollCreated.PollID[:]))
+  case RevealPeriodHaltedLogTopic:
+    revealPeriodHalted := new(contract.TruSetCommitRevealVotingRevealPeriodHalted)
+    boundContract.UnpackLog(revealPeriodHalted, "RevealPeriodHalted", l)
+
+    log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
+  case VoteCommittedLogTopic:
+    voteCommitted := new(contract.TruSetCommitRevealVotingVoteCommitted)
+    boundContract.UnpackLog(voteCommitted, "VoteCommitted", l)
+
+    log.Printf("[Vote Committed]\t%s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex())
   case VoteRevealedLogTopic:
-      //log.Println("VOTE REVEALED")
-	default:
-		log.Printf("[Unexpected]\tlog with topics %x\n", l.Topics)
-		log.Println(l.Topics[0])
-	}
+    voteRevealed := new(contract.TruSetCommitRevealVotingVoteRevealed)
+    boundContract.UnpackLog(voteRevealed, "VoteRevealed", l)
+
+    log.Printf("[Vote Revealed]\t%s : %s", hexutil.Encode(voteRevealed.PollID[:]), voteRevealed.Voter.Hex())
+  default:
+    log.Printf("[Unexpected]\tlog with topics %x\n", l.Topics)
+    log.Println(l.Topics[0])
+  }
 }
 
 func fetchCommitments(pollID [32]byte) []database.Commitment {
@@ -145,81 +138,83 @@ func fetchCommitments(pollID [32]byte) []database.Commitment {
   return commitments
 }
 
-func RevealCommitments(ctx context.Context, commitments []database.Commitment, instrumentAddress common.Address, dataIdentifier [32]byte, payloadHash [32]byte) {
-  //log.Println(instrumentAddress)
-  //log.Println(hexutil.Encode(dataIdentifier[:]))
-  //log.Println(hexutil.Encode(payloadHash[:]))
+func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
+  commitments := fetchCommitments(revealPeriodStarted.PollID)
+  log.Println("num commitments", len(commitments))
 
-  for i := 0; i < len(commitments); i++ {
+  for i := 1; i < len(commitments); i++ {
+  //for _, commitment := range commitments {
     commitment := commitments[i]
-    log.Printf("[Vote Revealed TODO]\t%s voted %d on %s", commitment.VoterAddress, commitment.VoteOption, commitment.PollID)
-    opts := transactionOpts2(client)
-    log.Println(opts)
+    //commitment := commitments[1]
+    //log.Println("Nonce in votingSession", votingSession.
 
-    // TODO this throws a segmentation fault
-    //instance.RevealVote(
-      //opts,
-      //instrumentAddress,
-      //dataIdentifier,
-      //payloadHash,
-      //common.HexToAddress(commitment.VoterAddress),
-      //big.NewInt(int64(commitment.VoteOption)),
-      //big.NewInt(int64(commitment.Salt)))
+    //func(commitment database.Commitment, votingSession *contract.TruSetCommitRevealVotingSession) {
+      time.Sleep(5*time.Second)
+
+      nonce, _ := client.PendingNonceAt(context.Background(), from)
+      //nonce := votingSession.TransactOpts.Nonce
+      log.Println("[Revealing Vote]\t", nonce, hexutil.Encode(revealPeriodStarted.PollID[:]), commitment.VoterAddress)
+      trans, err := votingSession.RevealVote(
+        revealPeriodStarted.InstrumentAddress,
+        revealPeriodStarted.DataIdentifier,
+        revealPeriodStarted.PayloadHash,
+        common.HexToAddress(commitment.VoterAddress),
+        big.NewInt(int64(commitment.VoteOption)),
+        big.NewInt(int64(commitment.Salt)),
+      )
+
+      if err != nil {
+        fmt.Println("[Reveal Failed]\t", nonce, commitment, err)
+      } else {
+        //fmt.Println("[Reveal Succeeded]\t", commitment)
+        log.Println("[Reveal Succeeded]", trans.Nonce())
+      }
+    //}(commitment, votingSession)
   }
 }
 
-func unpackCommitRevealVoting(dest interface{}, logName string, l types.Log) {
-	err := CommitRevealVotingABI.Unpack(dest, logName, l.Data)
-	if err != nil {
-		fmt.Println("Failed to unpack:", err)
-	}
-	//log.Printf("%v: %+v\n", logName, dest)
-}
-
 func ProcessPastEvents(client *ethclient.Client) {
-	// TODO: we probably want a top-level cancellable context to pass to geth
-	ctx := context.Background()
+  ctx := context.Background()
 
-	// get past logs
-	logs, err := client.FilterLogs(ctx, filter)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+  // get past logs
+  logs, err := client.FilterLogs(context.Background(), filter)
+  if err != nil {
+    log.Fatal(err)
+    return
+  }
 
-	for _, l := range logs {
-		processLog(client, ctx, l)
-	}
+  for _, l := range logs {
+    processLog(client, ctx, l)
+  }
 
-	log.Println("End of existing logs")
+  log.Println("End of existing logs")
 }
 
 func ProcessFutureEvents(client *ethclient.Client) {
-	// TODO: we probably want a top-level cancellable context to pass to geth
-	ctx := context.Background()
-	log.Println("Log subscription starting")
+  ctx := context.Background()
+  log.Println("Log subscription starting")
 
-	// subscribe for new logs
-	// TODO: how to handle chain rollbacks and the resulting invalid logs? Probably monitor even status.
-	ch := make(chan types.Log, 100)
-	sub, err := client.SubscribeFilterLogs(ctx, filter, ch)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+  // subscribe for new logs
+  // TODO: how to handle chain rollbacks and the resulting invalid logs? Probably monitor even status.
+  ch := make(chan types.Log, 100)
+  sub, err := client.SubscribeFilterLogs(ctx, filter, ch)
+  if err != nil {
+    log.Fatal(err)
+    return
+  }
 
-	defer sub.Unsubscribe()
-	errChan := sub.Err()
+  defer sub.Unsubscribe()
+  errChan := sub.Err()
 
-	for {
-		select {
-		case err := <-errChan:
-			log.Println("Logs subscription error", err)
-			break
-		case l := <-ch:
-			processLog(client, ctx, l)
-		}
-	}
+  for {
+    select {
+    case err := <-errChan:
+      log.Println("Logs subscription error", err)
+      break
+    case l := <-ch:
+      processLog(client, ctx, l)
+    }
+  }
 
-	log.Println("Log subscription terminated")
+  log.Println("Log subscription terminated")
 }

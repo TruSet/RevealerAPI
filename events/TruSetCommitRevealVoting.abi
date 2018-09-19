@@ -82,20 +82,6 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "ROLE_PUBLISH",
-    "outputs": [
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "VOTE_AGAINST",
     "outputs": [
       {
@@ -109,12 +95,17 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "ROLE_VALIDATE",
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "commitPeriodStartedTimestamp",
     "outputs": [
       {
-        "name": "",
-        "type": "string"
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -303,6 +294,10 @@
     "name": "pollMap",
     "outputs": [
       {
+        "name": "commitPeriodStartedAt",
+        "type": "uint256"
+      },
+      {
         "name": "commitDeadline",
         "type": "uint256"
       },
@@ -341,20 +336,6 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "ROLE_ADMIN",
-    "outputs": [
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
       {
         "name": "_terminationDate",
@@ -366,6 +347,25 @@
       {
         "name": "expired",
         "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revealPeriodStartedTimestamp",
+    "outputs": [
+      {
+        "name": "timestamp",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -401,6 +401,33 @@
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": true,
+        "name": "instrumentAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "payloadHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RevealPeriodStarted",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -486,7 +513,7 @@
       },
       {
         "indexed": false,
-        "name": "revealDeadline",
+        "name": "revealDuraton",
         "type": "uint256"
       }
     ],
@@ -536,6 +563,25 @@
     ],
     "name": "RevealPeriodHalted",
     "type": "event"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "newContractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "transferParentAddress",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "constant": true,
@@ -684,16 +730,16 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_instruments",
-        "type": "address[]"
+        "name": "_instrument",
+        "type": "address"
       },
       {
-        "name": "_dataIdentifiers",
-        "type": "bytes32[]"
+        "name": "_dataIdentifier",
+        "type": "bytes32"
       },
       {
-        "name": "_payloadHashes",
-        "type": "bytes32[]"
+        "name": "_payloadHash",
+        "type": "bytes32"
       },
       {
         "name": "_voters",
@@ -753,7 +799,15 @@
     "constant": false,
     "inputs": [
       {
-        "name": "_pollID",
+        "name": "_instrument",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
         "type": "bytes32"
       }
     ],

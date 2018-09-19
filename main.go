@@ -71,14 +71,9 @@ func main() {
 	// Read data from all past events and write them into our DB
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
 	events.Init(client, commitRevealVotingContractAddress)
-	events.ProcessPastEvents(client)
+	//events.ProcessPastEvents(client)
 
-	if poll {
-		// In parallel with serving our REST resources, we continue to process incoming blockchain logs
-		// TODO: make sure we don't miss any events in the time windows between ProcessPastEvents and
-		// ProcessFutureEvents. (More likely when ProcessPastEvents takes significant elapsed time?)
-		go events.ProcessFutureEvents(client)
-	}
+  go events.ProcessFutureEvents(client)
 
 	// Run a REST server to serve TruSet API requests
 	r := SetupRouter()
