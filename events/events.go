@@ -146,9 +146,13 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
   log.Println("num commitments", len(commitments))
 
   //revealQueue := make(chan *database.Commitment)
-  buf := make([]uint64,0,len(commitments))
-  for i := 1; i < len(commitments); i++ {
+  beginNonce, _ := client.PendingNonceAt(context.Background(), from)
+  //buf := make([]big.Int,0,len(commitments))
+  for i := 0; i < len(commitments); i++ {
+
     mutex.Lock()
+    newNonce := int64(beginNonce) + int64(i) + int64(10)
+    votingSession.TransactOpts.Nonce = big.NewInt(newNonce)
     commitment := commitments[i]
     //revealQueue <- &commitments[i]
   //}
@@ -159,12 +163,11 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
     //log.Println("Nonce in votingSession", votingSession.
 
     //func(commitment database.Commitment, votingSession *contract.TruSetCommitRevealVotingSession) {
-    time.Sleep(1*time.Second)
+    time.Sleep(5*time.Second)
 
-    nonce, _ := client.PendingNonceAt(context.Background(), from)
-    //nonce := votingSession.TransactOpts.Nonce
+    nonce := votingSession.TransactOpts.Nonce
     log.Println("[Revealing Vote]\t", nonce, hexutil.Encode(revealPeriodStarted.PollID[:]), commitment.VoterAddress)
-    buf = append(buf, nonce)
+    //buf = append(buf, *nonce)
     trans, err := votingSession.RevealVote(
       revealPeriodStarted.InstrumentAddress,
       revealPeriodStarted.DataIdentifier,
@@ -183,7 +186,7 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
     mutex.Unlock()
     //}(commitment, votingSession)
   }
-  log.Println("Nonces", buf)
+  //log.Println("Nonces", buf)
 }
 
 func ProcessPastEvents(client *ethclient.Client) {
