@@ -7,6 +7,7 @@ import (
   "strings"
   "math/big"
   "time"
+  "sync"
   "encoding/hex"
 
   "github.com/TruSet/RevealerAPI/database"
@@ -138,39 +139,51 @@ func fetchCommitments(pollID [32]byte) []database.Commitment {
   return commitments
 }
 
+
 func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
+  var mutex = &sync.Mutex{}
   commitments := fetchCommitments(revealPeriodStarted.PollID)
   log.Println("num commitments", len(commitments))
 
+  //revealQueue := make(chan *database.Commitment)
+  buf := make([]uint64,0,len(commitments))
   for i := 1; i < len(commitments); i++ {
-  //for _, commitment := range commitments {
+    mutex.Lock()
     commitment := commitments[i]
+    //revealQueue <- &commitments[i]
+  //}
+  //close(revealQueue)
+  //for commitment := range revealQueue {
+    //for _, commitment := range commitments {
     //commitment := commitments[1]
     //log.Println("Nonce in votingSession", votingSession.
 
     //func(commitment database.Commitment, votingSession *contract.TruSetCommitRevealVotingSession) {
-      time.Sleep(5*time.Second)
+    time.Sleep(1*time.Second)
 
-      nonce, _ := client.PendingNonceAt(context.Background(), from)
-      //nonce := votingSession.TransactOpts.Nonce
-      log.Println("[Revealing Vote]\t", nonce, hexutil.Encode(revealPeriodStarted.PollID[:]), commitment.VoterAddress)
-      trans, err := votingSession.RevealVote(
-        revealPeriodStarted.InstrumentAddress,
-        revealPeriodStarted.DataIdentifier,
-        revealPeriodStarted.PayloadHash,
-        common.HexToAddress(commitment.VoterAddress),
-        big.NewInt(int64(commitment.VoteOption)),
-        big.NewInt(int64(commitment.Salt)),
-      )
+    nonce, _ := client.PendingNonceAt(context.Background(), from)
+    //nonce := votingSession.TransactOpts.Nonce
+    log.Println("[Revealing Vote]\t", nonce, hexutil.Encode(revealPeriodStarted.PollID[:]), commitment.VoterAddress)
+    buf = append(buf, nonce)
+    trans, err := votingSession.RevealVote(
+      revealPeriodStarted.InstrumentAddress,
+      revealPeriodStarted.DataIdentifier,
+      revealPeriodStarted.PayloadHash,
+      common.HexToAddress(commitment.VoterAddress),
+      big.NewInt(int64(commitment.VoteOption)),
+      big.NewInt(int64(commitment.Salt)),
+    )
 
-      if err != nil {
-        fmt.Println("[Reveal Failed]\t", nonce, commitment, err)
-      } else {
-        //fmt.Println("[Reveal Succeeded]\t", commitment)
-        log.Println("[Reveal Succeeded]", trans.Nonce())
-      }
+    if err != nil {
+      fmt.Println("[Reveal Failed]\t", nonce, commitment, err)
+    } else {
+      //fmt.Println("[Reveal Succeeded]\t", commitment)
+      log.Println("[Reveal Succeeded]", trans.Nonce())
+    }
+    mutex.Unlock()
     //}(commitment, votingSession)
   }
+  log.Println("Nonces", buf)
 }
 
 func ProcessPastEvents(client *ethclient.Client) {
