@@ -11,10 +11,10 @@ import (
    "github.com/gin-gonic/gin"
    "github.com/stretchr/testify/assert"
    "github.com/miguelmota/go-solidity-sha3"
+   "github.com/ethereum/go-ethereum/common/hexutil"
    "github.com/TruSet/RevealerAPI/database"
    "github.com/TruSet/RevealerAPI/config"
    "bytes"
-   "encoding/hex"
 )
 
 var db *gorm.DB
@@ -24,7 +24,6 @@ func setupTest() {
 	config.Init("circleci")
   env := config.GetConfig()
   var postgresUri = env.GetString("postgresUri")
-  log.Println(postgresUri)
 
   router = SetupRouter()
   db = SetupDB(postgresUri)
@@ -82,13 +81,11 @@ func TestValidCommitment(t *testing.T) {
     solsha3.Uint256(big.NewInt(int64(test_salt))),
   )
 
-  calculatedCommitHash := "0x" + hex.EncodeToString(test_commitHash)
-
    var jsonStr = fmt.Sprintf(
      "{\"pollID\":\"%s\", \"voterAddress\": \"%s\", \"commitHash\": \"%s\", \"voteOption\": %d, \"salt\": %d}",
      test_pollID,
      test_voterAddress,
-     calculatedCommitHash,
+     hexutil.Encode(test_commitHash[:]),
      test_voteOption,
      test_salt,
    )
@@ -117,12 +114,12 @@ func TestValidCommitment(t *testing.T) {
 
    var commitment database.Commitment;
    database.Db.Where(
-     "poll_id = ? and voter_address = ? and commit_hash = ?",
+     "poll_id = ? and voter_address = ?",
      test_pollID,
      test_voterAddress,
-     hex.EncodeToString(test_commitHash),
    ).Last(&commitment)
+   log.Println(test_pollID, commitment.CommitHash, hexutil.Encode(test_commitHash[:]))
 
-   assert.True(t, commitment.CommitHash == hex.EncodeToString(test_commitHash))
+   assert.True(t, commitment.CommitHash == hexutil.Encode(test_commitHash[:]))
 
 }
