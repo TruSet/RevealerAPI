@@ -8,6 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/cors"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/lib/pq"
@@ -91,6 +92,13 @@ func SetupDB(postgresUri string) *gorm.DB {
 func SetupRouter() *gin.Engine {
   router := gin.Default()
 
+  // TODO set cors
+  //config := cors.DefaultConfig()
+  //config.AllowOrigins = []string{"*"}
+
+  //router.Use(cors.New(config))
+
+  router.Use(cors.Default())
 	v1 := router.Group("/revealer/v0.1")
 	{
 		commitments := v1.Group("/commitments")

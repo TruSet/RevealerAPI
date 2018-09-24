@@ -31,7 +31,7 @@
   revision = "504e848d77ea4752b3057b8fb46da0e7f746ccf3"
 
 [[projects]]
-  digest = "1:52e566779c2ac3eff6a10a8cb6c50e73c1e08cde1cc564d103c5009075ad6d9b"
+  digest = "1:be57c090d641fd7f4e49152cbf99ce4f01fb9d68f9a0442716b0e28055290265"
   name = "github.com/ethereum/go-ethereum"
   packages = [
     ".",
@@ -59,7 +59,7 @@
     "rpc",
     "trie",
   ]
-  pruneopts = "UT"
+  pruneopts = "T"
   revision = "580145e96db848cb8e2f8bb8f0621bcacbc9521c"
 
 [[projects]]
@@ -69,6 +69,14 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "ccc981bf80385c528a65fbfdd49bf2d8da22aa23"
+
+[[projects]]
+  digest = "1:2b59aca2665ff804f6606c8829eaee133ddd3aefbc841014660d961b0034f888"
+  name = "github.com/gin-contrib/cors"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "cf4846e6a636a76237a28d9286f163c132e841bc"
+  version = "v1.2"
 
 [[projects]]
   branch = "master"
@@ -429,6 +437,7 @@
     "github.com/ethereum/go-ethereum/core/types",
     "github.com/ethereum/go-ethereum/ethclient",
     "github.com/ethereum/go-ethereum/event",
+    "github.com/gin-contrib/cors",
     "github.com/gin-gonic/gin",
     "github.com/jinzhu/gorm",
     "github.com/jinzhu/gorm/dialects/postgres",
