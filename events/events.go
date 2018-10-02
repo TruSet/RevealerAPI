@@ -2,47 +2,46 @@ package events
 
 import (
   "context"
-  "fmt"
+  "encoding/hex"
   "log"
+  "math/big"
   "os"
   "strings"
-  "math/big"
-  "encoding/hex"
 
-  "github.com/TruSet/RevealerAPI/database"
   "github.com/TruSet/RevealerAPI/contract"
+  "github.com/TruSet/RevealerAPI/database"
 
   ethereum "github.com/ethereum/go-ethereum"
-  "github.com/ethereum/go-ethereum/common"
-  "github.com/ethereum/go-ethereum/core/types"
-  "github.com/ethereum/go-ethereum/ethclient"
-  "github.com/ethereum/go-ethereum/common/hexutil"
   "github.com/ethereum/go-ethereum/accounts/abi"
   "github.com/ethereum/go-ethereum/accounts/abi/bind"
+  "github.com/ethereum/go-ethereum/common"
+  "github.com/ethereum/go-ethereum/common/hexutil"
+  "github.com/ethereum/go-ethereum/core/types"
+  "github.com/ethereum/go-ethereum/ethclient"
 
   "github.com/miguelmota/go-solidity-sha3"
 )
 
 var (
-  commitRevealVotingContractAddress                     common.Address
-  filter                                                ethereum.FilterQuery
-  votingSession                                         *contract.TruSetCommitRevealVotingSession
-  boundContract                                         *bind.BoundContract
-  from                                                  common.Address
+  commitRevealVotingContractAddress common.Address
+  filter                            ethereum.FilterQuery
+  votingSession                     *contract.TruSetCommitRevealVotingSession
+  boundContract                     *bind.BoundContract
+  from                              common.Address
 )
 
-func getLogTopic(eventSignature string) (common.Hash) {
+func getLogTopic(eventSignature string) common.Hash {
   return common.HexToHash("0x" + hex.EncodeToString(solsha3.SoliditySHA3(solsha3.String(eventSignature))))
 }
 
 var VoteCommittedLogTopic = getLogTopic("VoteCommitted(bytes32,address,bytes32)")
-var VoteRevealedLogTopic = getLogTopic("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256)")
+var VoteRevealedLogTopic = getLogTopic("VoteRevealed(bytes32,bytes32,uint256,address,address,uint256,uint256,uint256)")
 var CommitPeriodHaltedLogTopic = getLogTopic("CommitPeriodHalted(bytes32,address,uint256)")
 var RevealPeriodStartedLogTopic = getLogTopic("RevealPeriodStarted(bytes32,address,bytes32,bytes32)")
 var RevealPeriodHaltedLogTopic = getLogTopic("RevealPeriodHalted(bytes32,address,uint256)")
 var PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint256)")
 
-func revealTransactionOpts(client *ethclient.Client) (*bind.TransactOpts) {
+func revealTransactionOpts(client *ethclient.Client) *bind.TransactOpts {
   key := os.Getenv("REVEALER_KEY")
   passphrase := os.Getenv("REVEALER_PASSPHRASE")
   auth, err := bind.NewTransactor(strings.NewReader(key), passphrase)
@@ -68,13 +67,13 @@ func Init(client *ethclient.Client, commitRevealVotingAddress string) {
   opts := revealTransactionOpts(client)
 
   votingSession = &contract.TruSetCommitRevealVotingSession{
-    Contract: votingContract,
+    Contract:     votingContract,
     TransactOpts: *opts,
   }
 
   from = opts.From
   commitRevealVotingABI, _ := abi.JSON(strings.NewReader(contract.TruSetCommitRevealVotingABI))
-  boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, commitRevealVotingABI, nil, nil , nil)
+  boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, commitRevealVotingABI, nil, nil, nil)
 }
 
 func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
@@ -117,12 +116,17 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
     voteCommitted := new(contract.TruSetCommitRevealVotingVoteCommitted)
     boundContract.UnpackLog(voteCommitted, "VoteCommitted", l)
 
-    log.Printf("[Vote Committed]\t%s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex())
+    if knownCommitment(voteCommitted.PollID, voteCommitted.SecretHash) {
+      log.Printf("[Vote Committed] (recognised): %s : %s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex(), hexutil.Encode(voteCommitted.SecretHash[:]))
+    } else {
+      log.Printf("[Vote Committed] UNRECOGNISED: %s : %s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex(), hexutil.Encode(voteCommitted.SecretHash[:]))
+    }
+
   case VoteRevealedLogTopic:
     voteRevealed := new(contract.TruSetCommitRevealVotingVoteRevealed)
     boundContract.UnpackLog(voteRevealed, "VoteRevealed", l)
 
-    log.Printf("[Vote Revealed]\t%s : %s", hexutil.Encode(voteRevealed.PollID[:]), voteRevealed.Voter.Hex())
+    log.Printf("[Vote Revealed]\t%s : %s : %d", hexutil.Encode(voteRevealed.PollID[:]), voteRevealed.Voter.Hex(), voteRevealed.Choice)
   default:
     log.Printf("[Unexpected]\tlog with topics %x\n", l.Topics)
     log.Println(l.Topics[0])
@@ -135,35 +139,73 @@ func fetchCommitments(pollID [32]byte) []database.Commitment {
   return commitments
 }
 
+func knownCommitment(pollID [32]byte, commitHash [32]byte) bool {
+  var commitments []database.Commitment
+  database.Db.Where("poll_id = ? and commit_hash = ?", hexutil.Encode(pollID[:]), hexutil.Encode(commitHash[:])).Find(&commitments)
+  return len(commitments) > 0
+}
+
+func logTrxResult(ctx context.Context, client *ethclient.Client, tx *types.Transaction, description string) {
+  receipt, err := bind.WaitMined(ctx, client, tx)
+  if err != nil || receipt.Status == 0 {
+    log.Printf("[%v FAILED] %+v %v %+v", description, err, receipt)
+  }
+  log.Printf("[%v Successful]", description)
+}
 
 func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
   commitments := fetchCommitments(revealPeriodStarted.PollID)
+  retryRevealsIndividually := false
 
+  // First try revealing all votes together.
+  var voters []common.Address
+  var voteOptions []*big.Int
+  var salts []*big.Int
   for i := 0; i < len(commitments); i++ {
     commitment := commitments[i]
+    voters = append(voters, common.HexToAddress(commitment.VoterAddress))
+    voteOptions = append(voteOptions, big.NewInt(int64(commitment.VoteOption)))
+    salts = append(salts, big.NewInt(int64(commitment.Salt)))
+  }
 
-    trans, err := votingSession.RevealVote(
-      revealPeriodStarted.InstrumentAddress,
-      revealPeriodStarted.DataIdentifier,
-      revealPeriodStarted.PayloadHash,
-      common.HexToAddress(commitment.VoterAddress),
-      big.NewInt(int64(commitment.VoteOption)),
-      big.NewInt(int64(commitment.Salt)),
-    )
+  trans, err := votingSession.RevealVotes(
+    revealPeriodStarted.InstrumentAddress,
+    revealPeriodStarted.DataIdentifier,
+    revealPeriodStarted.PayloadHash,
+    voters,
+    voteOptions,
+    salts,
+  )
 
-    if err != nil {
-      fmt.Println("[Reveal Submission Failed]\t", commitment, err)
-    } else {
-      log.Println("[Reveal Submission Succeeded]", commitment, trans.Nonce())
-    }
+  if err != nil {
+    log.Printf("[Reveal-All Submission FAILED] %v", err)
+    retryRevealsIndividually = true
+  } else {
     // TODO: here and elsewhere we want to use a cancellable context
-		//       this call will hang indefinitely until our transaction is mined or the context is cancelled
-    _, err = bind.WaitMined(context.Background(), client, trans)
-		if err != nil {
-			log.Fatalf("[Reveal Trx Failed]\t", commitment, err)
-		}
-    log.Println("[Reveal Successful]\t", commitment)
+    //       this call will hang indefinitely until our transaction is mined or the context is cancelled
+    logTrxResult(context.Background(), client, trans, "Reveal-All Trx")
+  }
 
+  // // If we could not reveal all votes together, fall back to revealing them individually
+  if retryRevealsIndividually {
+    for i := 0; i < len(commitments); i++ {
+      commitment := commitments[i]  
+      trans, err := votingSession.RevealVote(
+        revealPeriodStarted.InstrumentAddress,
+        revealPeriodStarted.DataIdentifier,
+        revealPeriodStarted.PayloadHash,
+        common.HexToAddress(commitment.VoterAddress),
+        big.NewInt(int64(commitment.VoteOption)),
+        big.NewInt(int64(commitment.Salt)),
+      )
+      if err != nil {
+        log.Printf("[Reveal Submission FAILED] %+v %v", commitment, err)
+      } else {
+        // TODO: here and elsewhere we want to use a cancellable context
+        //       this call will hang indefinitely until our transaction is mined or the context is cancelled
+        logTrxResult(context.Background(), client, trans, "Reveal Trx "+commitment.VoterAddress)
+      }
+    }
   }
 }
 

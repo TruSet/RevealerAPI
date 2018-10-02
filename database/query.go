@@ -1,20 +1,20 @@
 package database
 
 import (
-  "net/http"
   "encoding/hex"
+  "log"
   "math/big"
-
+  "net/http"  
+  "github.com/gin-gonic/gin"
   "github.com/miguelmota/go-solidity-sha3"
-	"github.com/gin-gonic/gin"
 )
 
 type CommitmentBody struct {
-  PollID string `json:"pollID"`
+  PollID       string `json:"pollID"`
   VoterAddress string `json:"voterAddress"`
-  CommitHash string `json:"commitHash"`
-  VoteOption int64 `json:"voteOption"`
-  Salt int64 `json:"salt"`
+  CommitHash   string `json:"commitHash"`
+  VoteOption   int64  `json:"voteOption"`
+  Salt         int64  `json:"salt"`
 }
 
 func StoreCommitment(c *gin.Context) {
@@ -32,16 +32,17 @@ func StoreCommitment(c *gin.Context) {
     return
   }
 
+  log.Printf("Storing commitment: %v %v %d %d (%v)", commitmentBody.PollID, commitmentBody.VoterAddress, commitmentBody.VoteOption, commitmentBody.Salt, commitmentBody.CommitHash)
+
   commitment := Commitment{
-    PollID:    commitmentBody.PollID,
+    PollID:       commitmentBody.PollID,
     VoterAddress: commitmentBody.VoterAddress,
-    CommitHash: commitmentBody.CommitHash,
-    VoteOption: uint8(commitmentBody.VoteOption),
-    Salt: uint64(commitmentBody.Salt),
+    CommitHash:   commitmentBody.CommitHash,
+    VoteOption:   uint8(commitmentBody.VoteOption),
+    Salt:         uint64(commitmentBody.Salt),
   }
   Db.Create(&commitment)
-	//Db.Debug().Create(&commitment)
-
+  //Db.Debug().Create(&commitment)
   
   c.JSON(http.StatusCreated, gin.H{"message": "vote will be revealed when voting closes"})
 }
