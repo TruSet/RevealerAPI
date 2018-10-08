@@ -7,6 +7,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "commitDeadline",
+    "outputs": [
+      {
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
     "name": "pollExists",
     "outputs": [
       {
@@ -224,6 +243,14 @@
     "name": "getVote",
     "outputs": [
       {
+        "name": "hasVoted",
+        "type": "bool"
+      },
+      {
+        "name": "hasRevealed",
+        "type": "bool"
+      },
+      {
         "name": "vote",
         "type": "uint256"
       }
@@ -271,6 +298,25 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revealDeadline",
+    "outputs": [
+      {
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "VOTE_FOR",
     "outputs": [
@@ -298,7 +344,7 @@
         "type": "uint256"
       },
       {
-        "name": "commitDeadline",
+        "name": "commitDuration",
         "type": "uint256"
       },
       {
@@ -306,11 +352,7 @@
         "type": "uint256"
       },
       {
-        "name": "revealDuraton",
-        "type": "uint256"
-      },
-      {
-        "name": "revealDeadline",
+        "name": "revealDuration",
         "type": "uint256"
       },
       {
@@ -488,6 +530,11 @@
         "indexed": false,
         "name": "votesAgainst",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "votesCommittedButNotRevealed",
+        "type": "uint256"
       }
     ],
     "name": "VoteRevealed",
@@ -508,12 +555,12 @@
       },
       {
         "indexed": false,
-        "name": "commitDeadline",
+        "name": "commitDuration",
         "type": "uint256"
       },
       {
         "indexed": false,
-        "name": "revealDuraton",
+        "name": "revealDuration",
         "type": "uint256"
       }
     ],
