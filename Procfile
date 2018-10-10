@@ -1,1 +1,1 @@
-web: TruSetAPIServer -e heroku -p $PORT
+web: RevealerAPI -e heroku -p $PORT

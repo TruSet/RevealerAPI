@@ -5,7 +5,7 @@ jobs:
       - image: circleci/golang:1.9
         environment:
           DEP_VERSION: 0.5.0
-    working_directory: /go/src/github.com/TruSet/TruSetAPIServer
+    working_directory: /go/src/github.com/TruSet/RevealerAPI
     steps:
       - checkout
       - restore_cache:
@@ -25,7 +25,7 @@ jobs:
         environment:
           POSTGRES_USER: ci-postgres
           POSTGRES_DB: circle-test
-    working_directory: /go/src/github.com/TruSet/TruSetAPIServer
+    working_directory: /go/src/github.com/TruSet/RevealerAPI
     steps:
       - checkout
       - restore_cache:

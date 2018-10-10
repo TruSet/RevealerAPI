@@ -44,7 +44,8 @@ var PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint2
 
 func revealTransactionOpts(client *ethclient.Client) (*bind.TransactOpts) {
   key := os.Getenv("REVEALER_KEY")
-  auth, err := bind.NewTransactor(strings.NewReader(key), "")
+  passphrase := os.Getenv("REVEALER_PASSPHRASE")
+  auth, err := bind.NewTransactor(strings.NewReader(key), passphrase)
   if err != nil {
     log.Fatal(err)
   }

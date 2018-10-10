@@ -62,6 +62,9 @@ func main() {
 
 	// Open a database connection, and close it when we are terminated
 	postgresUri := env.GetString("postgresUri")
+	if postgresUri == "" {
+    postgresUri = os.Getenv("DATABASE_URL")
+  }
   db := SetupDB(postgresUri)
 	defer db.Close()
 	database.InitDb(db)
