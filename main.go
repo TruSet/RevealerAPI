@@ -68,11 +68,15 @@ func main() {
 	// Uncomment to create some test data
 	//database.SetupTestData()
 
-	// Read data from all past events and write them into our DB
+	// Read data from all past events and reveal any we have not already revealed.
+	// This allows us to catch up automatically on lost logs whenever we restart.
+	// (If we never restart there's no extra work to do. But if we do, this is safer than ignoring the gap.)
+	// There are more efficient ways of doing this but they are more work. We would need to track
+	// logs that have been processed successfully.
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
-	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
 	events.Init(clientString, commitRevealVotingContractAddress)
-	//events.ProcessPastEvents(client)
+	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
+	events.ProcessPastEvents()
 
 	go events.ProcessFutureEvents()
 
