@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
@@ -30,7 +29,6 @@ func init() {
 func main() {
 
 	var clientString string
-	var client *ethclient.Client
 	var err error
 
 	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
@@ -53,8 +51,6 @@ func main() {
 		clientString = env.GetString("ethereumWs")
 	}
 
-	client, err = ethclient.Dial(clientString)
-
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client %v: %v", clientString, err)
 	}
@@ -75,10 +71,10 @@ func main() {
 	// Read data from all past events and write them into our DB
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
 	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
-	events.Init(client, commitRevealVotingContractAddress)
+	events.Init(clientString, commitRevealVotingContractAddress)
 	//events.ProcessPastEvents(client)
 
-	go events.ProcessFutureEvents(client)
+	go events.ProcessFutureEvents()
 
 	// Run a REST server to serve TruSet API requests
 	r := SetupRouter()

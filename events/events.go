@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/TruSet/RevealerAPI/contract"
 	"github.com/TruSet/RevealerAPI/database"
@@ -28,6 +29,8 @@ var (
 	votingSession                     *contract.TruSetCommitRevealVotingSession
 	boundContract                     *bind.BoundContract
 	from                              common.Address
+	client                            *ethclient.Client
+	clientString                      string
 )
 
 func getLogTopic(eventSignature string) common.Hash {
@@ -51,8 +54,22 @@ func revealTransactionOpts(client *ethclient.Client) *bind.TransactOpts {
 	return auth
 }
 
-func Init(client *ethclient.Client, commitRevealVotingAddress string) {
+func dialClient(_clientString string) {
+	var err error
+
+	log.Println("Dialling client...")
+	client, err = ethclient.Dial(_clientString)
+	log.Println("... dialling complete.")
+
+	if err != nil {
+		log.Fatalf("Failed to connect to the Ethereum client %v: %v", _clientString, err)
+	}
+}
+
+func Init(_clientString string, commitRevealVotingAddress string) {
 	commitRevealVotingContractAddress = common.HexToAddress(commitRevealVotingAddress)
+	clientString = _clientString
+	dialClient(clientString)
 
 	filter = ethereum.FilterQuery{
 		Addresses: []common.Address{commitRevealVotingContractAddress},
@@ -89,7 +106,11 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 		// shouldn't have to use this low level boundContract
 		boundContract.UnpackLog(revealPeriodStarted, "RevealPeriodStarted", l)
 
-		log.Printf("[Reveal Period Started]\t%s", hexutil.Encode(revealPeriodStarted.PollID[:]))
+		log.Printf("[Reveal Period Started]\t%s: %s / %s / %s",
+			hexutil.Encode(revealPeriodStarted.PollID[:]),
+			revealPeriodStarted.InstrumentAddress.String(),
+			hexutil.Encode(revealPeriodStarted.DataIdentifier[:]),
+			hexutil.Encode(revealPeriodStarted.PayloadHash[:]))
 
 		RevealCommitments(client, revealPeriodStarted)
 	case CommitPeriodHaltedLogTopic:
@@ -209,7 +230,7 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
 	}
 }
 
-func ProcessPastEvents(client *ethclient.Client) {
+func ProcessPastEvents() {
 	ctx := context.Background()
 
 	// get past logs
@@ -226,31 +247,65 @@ func ProcessPastEvents(client *ethclient.Client) {
 	log.Println("End of existing logs")
 }
 
-func ProcessFutureEvents(client *ethclient.Client) {
+func ProcessFutureEvents() {
 	ctx := context.Background()
-	log.Println("Log subscription starting")
 
-	// subscribe for new logs
-	// TODO: how to handle chain rollbacks and the resulting invalid logs? Probably monitor even status.
-	ch := make(chan types.Log, 100)
-	sub, err := client.SubscribeFilterLogs(ctx, filter, ch)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	defer sub.Unsubscribe()
-	errChan := sub.Err()
-
+	// TODO:
+	// Infura closes idle websockets connections. We could keep the websockets
+	// connection alive using Ping and Pong packets, but the websocket library
+	// we are using does not yet support these
+	// (https://github.com/golang/go/issues/5958). As a workaround,
+	// we attempt to re-establish the connection and the subscription whenever
+	// the connection times out.
+	//
+	// We naively guard against an infinite tight loop by bailing out completely if
+	// the connection fails or is closed twice within a second.
+	//
+	// Nothing about this is water-tight. We are prone to bailing out
+	// fatally, unnecessarily, when periodic retries would be preferable.
+	// And even where the re-subscription succeeds, there's a danger that
+	// we miss logs in the interval since the last subscription closed.
+	// But in practice this quick and dirty solution seems to be
+	// "Good Enough", probably until we do proper Ping/Pong or move
+	// away from Infura towards our own local client.
+retryLoop:
 	for {
-		select {
-		case err := <-errChan:
-			log.Println("Logs subscription error", err)
-			break
-		case l := <-ch:
-			processLog(client, ctx, l)
-		}
-	}
+		log.Println("Log subscription starting")
+		subscriptionTime := time.Now()
 
-	log.Println("Log subscription terminated")
+		// subscribe for new logs
+		// TODO: how to handle chain rollbacks and the resulting invalid logs? Probably monitor even status.
+		ch := make(chan types.Log, 100)
+		sub, err := client.SubscribeFilterLogs(ctx, filter, ch)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+
+		defer sub.Unsubscribe()
+		errChan := sub.Err()
+
+	pollingLoop:
+		for {
+			select {
+			case err := <-errChan:
+				log.Println("Logs subscription error", err)
+				break pollingLoop
+			case l := <-ch:
+				processLog(client, ctx, l)
+			}
+		}
+		log.Println("Log subscription terminated")
+
+		// If we've failed twice in quick succession, we abort. Otherwise, dial the client again
+		// and re-subscribe for events.
+		secondsSinceLastFailure := time.Since(subscriptionTime).Seconds()
+		if secondsSinceLastFailure < 1 {
+			log.Printf("It has been only %v seconds since our previous failure. Exiting.", secondsSinceLastFailure)
+			break retryLoop
+		}
+
+		dialClient(clientString)
+	}
+	log.Println("Log subscription terminated permanently.")
 }
