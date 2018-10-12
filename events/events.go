@@ -33,6 +33,7 @@ var (
 	client                            *ethclient.Client
 	clientString                      string
 	processingPastEvents              bool
+	revealPeriodStartedSyncChan       chan contract.TruSetCommitRevealVotingRevealPeriodStarted
 )
 
 func getLogTopic(eventSignature string) common.Hash {
@@ -73,6 +74,7 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 	clientString = _clientString
 	dialClient(clientString)
 	processingPastEvents = false
+	revealPeriodStartedSyncChan = make(chan contract.TruSetCommitRevealVotingRevealPeriodStarted, 100)
 
 	filter = ethereum.FilterQuery{
 		Addresses: []common.Address{commitRevealVotingContractAddress},
@@ -101,6 +103,8 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 		Contract: votingContractCaller,
 		CallOpts: *new(bind.CallOpts),
 	}
+
+	go synchroniseRevealPeriodStartedProcessing()
 }
 
 func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
@@ -122,7 +126,9 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 			hexutil.Encode(revealPeriodStarted.DataIdentifier[:]),
 			hexutil.Encode(revealPeriodStarted.PayloadHash[:]))
 
-		RevealCommitments(client, revealPeriodStarted)
+		// We send these logs to a channel for processing, to ensure we only process one at a time
+		// Without this, we have experienced issues with using the wrong nonce
+		revealPeriodStartedSyncChan <- *revealPeriodStarted
 	case CommitPeriodHaltedLogTopic:
 		commitPeriodHalted := new(contract.TruSetCommitRevealVotingCommitPeriodHalted)
 		boundContract.UnpackLog(commitPeriodHalted, "CommitPeriodHalted", l)
@@ -195,7 +201,26 @@ func processRevealResult(ctx context.Context, client *ethclient.Client, tx *type
 	}
 }
 
-func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
+func synchroniseRevealPeriodStartedProcessing() {
+
+	// Process incoming logs forever. One at a time so that we do not see nonce issues.
+	for {
+		select {
+		case revealPeriodStarted := <-revealPeriodStartedSyncChan:
+
+			log.Printf("[Processing Reveal Period Started]\t%s: %s / %s / %s",
+				hexutil.Encode(revealPeriodStarted.PollID[:]),
+				revealPeriodStarted.InstrumentAddress.String(),
+				hexutil.Encode(revealPeriodStarted.DataIdentifier[:]),
+				hexutil.Encode(revealPeriodStarted.PayloadHash[:]))
+
+			processRevealPeriodStartedLog(client, &revealPeriodStarted)
+		}
+	}
+
+}
+
+func processRevealPeriodStartedLog(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
 	commitments := fetchCommitments(revealPeriodStarted.PollID)
 	ignoreThisPoll := len(commitments) == 0
 	log.Println("Ignore due to length?", ignoreThisPoll)
@@ -344,7 +369,10 @@ retryLoop:
 				log.Println("Logs subscription error", err)
 				break pollingLoop
 			case l := <-ch:
-				processLog(client, ctx, l)
+				// We delay log processing by 30 seconds in the hope that it will help with
+				// transactions failing when using infura
+				f := func() { processLog(client, ctx, l) }
+				time.AfterFunc(time.Duration(30)*time.Second, f)
 			}
 		}
 		log.Println("Log subscription terminated")
