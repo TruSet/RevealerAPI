@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/lib/pq"
@@ -45,13 +45,13 @@ func main() {
 
 	log.Println(fmt.Sprintf("Starting TruSet Revealer API server in %v mode...", *environment))
 	env := config.GetConfig()
-  // Try IPC, if configured
-  clientString = env.GetString("ethereumIpc")
+	// Try IPC, if configured
+	clientString = env.GetString("ethereumIpc")
 
-  if clientString == "" {
-    log.Println("Using websockets...")
-    clientString = env.GetString("ethereumWs")
-  }
+	if clientString == "" {
+		log.Println("Using websockets...")
+		clientString = env.GetString("ethereumWs")
+	}
 
 	client, err = ethclient.Dial(clientString)
 
@@ -63,9 +63,9 @@ func main() {
 	// Open a database connection, and close it when we are terminated
 	postgresUri := env.GetString("postgresUri")
 	if postgresUri == "" {
-    postgresUri = os.Getenv("DATABASE_URL")
-  }
-  db := SetupDB(postgresUri)
+		postgresUri = os.Getenv("DATABASE_URL")
+	}
+	db := SetupDB(postgresUri)
 	defer db.Close()
 	database.InitDb(db)
 
@@ -78,31 +78,31 @@ func main() {
 	events.Init(client, commitRevealVotingContractAddress)
 	//events.ProcessPastEvents(client)
 
-  go events.ProcessFutureEvents(client)
+	go events.ProcessFutureEvents(client)
 
 	// Run a REST server to serve TruSet API requests
 	r := SetupRouter()
-  r.Run(":"+*port) // listen and serve on 0.0.0.0:8080 by default
+	r.Run(":" + *port) // listen and serve on 0.0.0.0:8080 by default
 }
 
 func SetupDB(postgresUri string) *gorm.DB {
-  db, err := gorm.Open("postgres", postgresUri)
+	db, err := gorm.Open("postgres", postgresUri)
 	if err != nil {
 		log.Fatal(err)
 	}
-  return db
+	return db
 }
 
 func SetupRouter() *gin.Engine {
-  router := gin.Default()
+	router := gin.Default()
 
-  // TODO set cors
-  //config := cors.DefaultConfig()
-  //config.AllowOrigins = []string{"*"}
+	// TODO set cors
+	//config := cors.DefaultConfig()
+	//config.AllowOrigins = []string{"*"}
 
-  //router.Use(cors.New(config))
+	//router.Use(cors.New(config))
 
-  router.Use(cors.Default())
+	router.Use(cors.Default())
 	v1 := router.Group("/revealer/v0.1")
 	{
 		commitments := v1.Group("/commitments")
@@ -110,5 +110,5 @@ func SetupRouter() *gin.Engine {
 			commitments.POST("", database.StoreCommitment) // Supports /instruments?proposalstate=xyz
 		}
 	}
-  return router
+	return router
 }
