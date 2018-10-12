@@ -247,6 +247,12 @@ func ProcessPastEvents() {
 	log.Println("End of existing logs")
 }
 
+// Uncomment if mocking websockets connection errors
+// func sleepThenSendTrueTo(duration time.Duration, channelToSendTrueTo chan<- bool) {
+// 	time.Sleep(duration)
+// 	channelToSendTrueTo <- true
+// }
+
 func ProcessFutureEvents() {
 	ctx := context.Background()
 
@@ -268,6 +274,11 @@ func ProcessFutureEvents() {
 	// But in practice this quick and dirty solution seems to be
 	// "Good Enough", probably until we do proper Ping/Pong or move
 	// away from Infura towards our own local client.
+
+	// Uncomment to mock websockets connection errors
+	// testChan := make(chan bool)
+	// go sleepThenSendTrueTo(time.Duration(20)*time.Second, testChan)
+
 retryLoop:
 	for {
 		log.Println("Log subscription starting")
@@ -288,6 +299,10 @@ retryLoop:
 	pollingLoop:
 		for {
 			select {
+			// Uncomment to mock websockets connection errors
+			// case <-testChan:
+			// 	log.Println("Subscription closed by test channel at time", time.Now())
+			// 	break pollingLoop
 			case err := <-errChan:
 				log.Println("Logs subscription error", err)
 				break pollingLoop
