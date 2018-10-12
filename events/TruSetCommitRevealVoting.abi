@@ -436,7 +436,7 @@
   {
     "inputs": [
       {
-        "name": "_rbac",
+        "name": "_hub",
         "type": "address"
       }
     ],
@@ -610,25 +610,6 @@
     ],
     "name": "RevealPeriodHalted",
     "type": "event"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "name": "newContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "transferParentAddress",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
   },
   {
     "constant": true,
