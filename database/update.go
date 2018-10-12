@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gin-gonic/gin"
 	"github.com/miguelmota/go-solidity-sha3"
 )
@@ -46,4 +47,14 @@ func StoreCommitment(c *gin.Context) {
 	//Db.Debug().Create(&commitment)
 
 	c.JSON(http.StatusCreated, gin.H{"message": "vote will be revealed when voting closes"})
+}
+
+func SoftDeleteRevealed(pollID [32]byte, voterAddress string) {
+	// We make use of gorm's "soft delete"
+	// Records are not really deleted, but flagged as such and ignored in queries
+	if voterAddress == "" {
+		Db.Where("poll_id = ?", hexutil.Encode(pollID[:])).Delete(Commitment{})
+	} else {
+		Db.Where("poll_id = ? and voter_address = ?", hexutil.Encode(pollID[:]), voterAddress).Delete(Commitment{})
+	}
 }

@@ -27,10 +27,12 @@ var (
 	commitRevealVotingContractAddress common.Address
 	filter                            ethereum.FilterQuery
 	votingSession                     *contract.TruSetCommitRevealVotingSession
+	contractCallSession               *contract.TruSetCommitRevealVotingCallerSession
 	boundContract                     *bind.BoundContract
 	from                              common.Address
 	client                            *ethclient.Client
 	clientString                      string
+	processingPastEvents              bool
 )
 
 func getLogTopic(eventSignature string) common.Hash {
@@ -57,7 +59,7 @@ func revealTransactionOpts(client *ethclient.Client) *bind.TransactOpts {
 func dialClient(_clientString string) {
 	var err error
 
-	log.Println("Dialling client...")
+	log.Println("Dialling client:", _clientString)
 	client, err = ethclient.Dial(_clientString)
 	log.Println("... dialling complete.")
 
@@ -70,6 +72,7 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 	commitRevealVotingContractAddress = common.HexToAddress(commitRevealVotingAddress)
 	clientString = _clientString
 	dialClient(clientString)
+	processingPastEvents = false
 
 	filter = ethereum.FilterQuery{
 		Addresses: []common.Address{commitRevealVotingContractAddress},
@@ -91,6 +94,13 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 	from = opts.From
 	commitRevealVotingABI, _ := abi.JSON(strings.NewReader(contract.TruSetCommitRevealVotingABI))
 	boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, commitRevealVotingABI, nil, nil, nil)
+
+	votingContractCaller, _ := contract.NewTruSetCommitRevealVotingCaller(commitRevealVotingContractAddress, client)
+
+	contractCallSession = &contract.TruSetCommitRevealVotingCallerSession{
+		Contract: votingContractCaller,
+		CallOpts: *new(bind.CallOpts),
+	}
 }
 
 func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
@@ -162,81 +172,107 @@ func fetchCommitments(pollID [32]byte) []database.Commitment {
 
 func knownCommitment(pollID [32]byte, commitHash [32]byte) bool {
 	var commitments []database.Commitment
-	database.Db.Where("poll_id = ? and commit_hash = ?", hexutil.Encode(pollID[:]), hexutil.Encode(commitHash[:])).Find(&commitments)
+	database.Db.Unscoped().Where("poll_id = ? and commit_hash = ?", hexutil.Encode(pollID[:]), hexutil.Encode(commitHash[:])).Find(&commitments)
 	return len(commitments) > 0
 }
 
-func logTrxResult(ctx context.Context, client *ethclient.Client, tx *types.Transaction, description string) {
+func processRevealResult(ctx context.Context, client *ethclient.Client, tx *types.Transaction, pollID [32]byte, voterAddress string) {
+	var description string
 	receipt, err := bind.WaitMined(ctx, client, tx)
-	if err != nil || receipt.Status == 0 {
-		log.Printf("[%v FAILED] %+v %v %+v", description, err, receipt)
+
+	if voterAddress == "" {
+		description = "Reveal-All Trx"
+	} else {
+		description = "Reveal Trx for " + voterAddress
 	}
-	log.Printf("[%v Successful]", description)
+
+	if err != nil || receipt.Status == 0 {
+		log.Printf("[%v FAILED] %v %+v", description, err, receipt)
+	} else {
+		// Mark the revealed proposals as revealed
+		log.Printf("[%v Successful]", description)
+		database.SoftDeleteRevealed(pollID, voterAddress)
+	}
 }
 
 func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
 	commitments := fetchCommitments(revealPeriodStarted.PollID)
-	retryRevealsIndividually := false
+	ignoreThisPoll := len(commitments) == 0
+	log.Println("Ignore due to length?", ignoreThisPoll)
 
-	// First try revealing all votes together.
-	var voters []common.Address
-	var voteOptions []*big.Int
-	var salts []*big.Int
-	for i := 0; i < len(commitments); i++ {
-		commitment := commitments[i]
-		voters = append(voters, common.HexToAddress(commitment.VoterAddress))
-		voteOptions = append(voteOptions, big.NewInt(int64(commitment.VoteOption)))
-		salts = append(salts, big.NewInt(int64(commitment.Salt)))
+	// We don't bother checking the poll status for real-time events
+	if !ignoreThisPoll && processingPastEvents {
+		pollEnded, err := contractCallSession.PollEnded(revealPeriodStarted.PollID)
+		ignoreThisPoll = (err == nil) && pollEnded
+		log.Println("Ignore due to poll status?", ignoreThisPoll)
 	}
 
-	trans, err := votingSession.RevealVotes(
-		revealPeriodStarted.InstrumentAddress,
-		revealPeriodStarted.DataIdentifier,
-		revealPeriodStarted.PayloadHash,
-		voters,
-		voteOptions,
-		salts,
-	)
+	if !ignoreThisPoll {
+		// There is work to do. First try revealing all votes in one transaction.
+		retryRevealsIndividually := false
 
-	if err != nil {
-		log.Printf("[Reveal-All Submission FAILED] %v", err)
-		retryRevealsIndividually = true
-	} else {
-		// TODO: here and elsewhere we want to use a cancellable context
-		//       this call will hang indefinitely until our transaction is mined or the context is cancelled
-		logTrxResult(context.Background(), client, trans, "Reveal-All Trx")
-	}
-
-	// // If we could not reveal all votes together, fall back to revealing them individually
-	if retryRevealsIndividually {
+		var voters []common.Address
+		var voteOptions []*big.Int
+		var salts []*big.Int
 		for i := 0; i < len(commitments); i++ {
 			commitment := commitments[i]
-			trans, err := votingSession.RevealVote(
-				revealPeriodStarted.InstrumentAddress,
-				revealPeriodStarted.DataIdentifier,
-				revealPeriodStarted.PayloadHash,
-				common.HexToAddress(commitment.VoterAddress),
-				big.NewInt(int64(commitment.VoteOption)),
-				big.NewInt(int64(commitment.Salt)),
-			)
-			if err != nil {
-				log.Printf("[Reveal Submission FAILED] %+v %v", commitment, err)
-			} else {
-				// TODO: here and elsewhere we want to use a cancellable context
-				//       this call will hang indefinitely until our transaction is mined or the context is cancelled
-				logTrxResult(context.Background(), client, trans, "Reveal Trx "+commitment.VoterAddress)
+			voters = append(voters, common.HexToAddress(commitment.VoterAddress))
+			voteOptions = append(voteOptions, big.NewInt(int64(commitment.VoteOption)))
+			salts = append(salts, big.NewInt(int64(commitment.Salt)))
+		}
+
+		trans, err := votingSession.RevealVotes(
+			revealPeriodStarted.InstrumentAddress,
+			revealPeriodStarted.DataIdentifier,
+			revealPeriodStarted.PayloadHash,
+			voters,
+			voteOptions,
+			salts,
+		)
+
+		if err != nil {
+			log.Printf("[Reveal-All Submission FAILED] %v", err)
+			retryRevealsIndividually = true
+		} else {
+			// TODO: here and elsewhere we want to use a cancellable context
+			//       this call will hang indefinitely until our transaction is mined or the context is cancelled
+			processRevealResult(context.Background(), client, trans, revealPeriodStarted.PollID, "")
+		}
+
+		// // If we could not reveal all votes together, fall back to revealing them individually
+		if retryRevealsIndividually {
+			for i := 0; i < len(commitments); i++ {
+				commitment := commitments[i]
+				trans, err := votingSession.RevealVote(
+					revealPeriodStarted.InstrumentAddress,
+					revealPeriodStarted.DataIdentifier,
+					revealPeriodStarted.PayloadHash,
+					common.HexToAddress(commitment.VoterAddress),
+					big.NewInt(int64(commitment.VoteOption)),
+					big.NewInt(int64(commitment.Salt)),
+				)
+				if err != nil {
+					log.Printf("[Reveal Submission FAILED] %+v %v", commitment, err)
+				} else {
+					// TODO: here and elsewhere we want to use a cancellable context
+					//       this call will hang indefinitely until our transaction is mined or the context is cancelled
+					processRevealResult(context.Background(), client, trans, revealPeriodStarted.PollID, commitment.VoterAddress)
+				}
 			}
 		}
 	}
 }
 
 func ProcessPastEvents() {
+
+	log.Printf("Processing past events")
+	processingPastEvents = true
 	ctx := context.Background()
 
 	// get past logs
 	logs, err := client.FilterLogs(context.Background(), filter)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to get past logs. Error: %v", err)
 		return
 	}
 
@@ -244,6 +280,7 @@ func ProcessPastEvents() {
 		processLog(client, ctx, l)
 	}
 
+	processingPastEvents = false
 	log.Println("End of existing logs")
 }
 
