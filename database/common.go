@@ -9,12 +9,13 @@ import (
 var Db *gorm.DB
 
 type Commitment struct {
-	PollID        string
-	CreatedAt time.Time
-	VoterAddress      string
+	PollID       string
+	CreatedAt    time.Time
+	VoterAddress string
 	CommitHash   string
-  VoteOption  uint8
-	Salt   uint64
+	VoteOption   uint8
+	Salt         uint64
+	DeletedAt    *time.Time
 }
 
 func InitDb(new_db *gorm.DB) {
