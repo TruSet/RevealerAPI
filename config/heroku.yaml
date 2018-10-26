@@ -1,5 +1,5 @@
 {
   ethereumRpc: "https://rinkeby.infura.io/DPMnSwvrMeMKAo39FbFp",
   ethereumWs: "wss://rinkeby.infura.io/ws",
-  commitRevealVotingContractAddress: "0x592d2ded18bc4af678ccf4d63f30755a3ecac5cd"
+  commitRevealVotingContractAddress: "0xd57e5e62b3832cd512ecf8c2638eabdb4e42194e"
 }

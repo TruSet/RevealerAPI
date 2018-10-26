@@ -2,3 +2,4 @@
 /.vendor-new/*
 /_vendor*/**
 !/vendor/vendor.json
+/config/*.bak
