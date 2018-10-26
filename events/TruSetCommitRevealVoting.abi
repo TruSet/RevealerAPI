@@ -100,8 +100,54 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "stakedForPollID",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8"
+      },
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "VOTE_AGAINST",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "numStakersForPoll",
     "outputs": [
       {
         "name": "",
@@ -422,6 +468,25 @@
         "type": "bytes32"
       }
     ],
+    "name": "stakersForPoll",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
     "name": "pollEnded",
     "outputs": [
       {
@@ -469,6 +534,92 @@
       }
     ],
     "name": "RevealPeriodStarted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "action",
+        "type": "uint8"
+      }
+    ],
+    "name": "Staked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "action",
+        "type": "uint8"
+      }
+    ],
+    "name": "StakeReturned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "name": "pollID",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "action",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "StakeBurnt",
     "type": "event"
   },
   {
@@ -792,6 +943,10 @@
     "constant": false,
     "inputs": [
       {
+        "name": "_proposer",
+        "type": "address"
+      },
+      {
         "name": "_instrument",
         "type": "address"
       },
@@ -815,7 +970,7 @@
     "name": "startPoll",
     "outputs": [
       {
-        "name": "pollID",
+        "name": "_pollID",
         "type": "bytes32"
       }
     ],
@@ -855,6 +1010,106 @@
     ],
     "name": "haltRevealPeriod",
     "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "name": "_instrumentAddress",
+        "type": "address"
+      },
+      {
+        "name": "_dataIdentifier",
+        "type": "bytes32"
+      },
+      {
+        "name": "_payloadHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "stakedForProposal",
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint8"
+      },
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "returnPollStake",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "returnAllPollStakes",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "name": "_pollID",
+        "type": "bytes32"
+      }
+    ],
+    "name": "burnPollStake",
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
