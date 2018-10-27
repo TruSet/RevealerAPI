@@ -78,9 +78,15 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 		Addresses: []common.Address{commitRevealVotingContractAddress},
 		FromBlock: big.NewInt(0),
 		ToBlock:   nil, // Latest block
-		Topics:    nil, // Match any topic, for testing
-		//Topics: [][]common.Hash{{
-		//RevealPeriodStartedLogTopic}},
+		//Topics:    nil, // Match any topic, for testing
+    Topics: [][]common.Hash{{
+      VoteCommittedLogTopic,
+      VoteRevealedLogTopic,
+      CommitPeriodHaltedLogTopic,
+      VoteRevealedLogTopic,
+      RevealPeriodHaltedLogTopic,
+      PollCreatedLogTopic,
+      RevealPeriodStartedLogTopic}},
 	}
 
 	votingContract, _ := contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, client)
