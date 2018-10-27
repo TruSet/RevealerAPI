@@ -16,7 +16,7 @@ import (
 )
 
 // TruSetCommitRevealVotingABI is the input ABI used to generate the binding from.
-const TruSetCommitRevealVotingABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"pollExists\",\"outputs\":[{\"name\":\"exists\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"didReveal\",\"outputs\":[{\"name\":\"revealed\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"commitPeriodActive\",\"outputs\":[{\"name\":\"active\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"revealPeriodActive\",\"outputs\":[{\"name\":\"active\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"VOTE_AGAINST\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"commitPeriodStartedTimestamp\",\"outputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"getVoteCounts\",\"outputs\":[{\"name\":\"numForVotes\",\"type\":\"uint256\"},{\"name\":\"numAgainstVotes\",\"type\":\"uint256\"},{\"name\":\"numCommittedButNotRevealedVotes\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"getVoters\",\"outputs\":[{\"name\":\"voters\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"MAX_REVEAL_DURATION_IN_SECONDS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"didCommit\",\"outputs\":[{\"name\":\"committed\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rbac\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"getVote\",\"outputs\":[{\"name\":\"vote\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"MAX_COMMIT_DURATION_IN_SECONDS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"getCommitHash\",\"outputs\":[{\"name\":\"commitHash\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"VOTE_FOR\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"pollMap\",\"outputs\":[{\"name\":\"commitPeriodStartedAt\",\"type\":\"uint256\"},{\"name\":\"commitDeadline\",\"type\":\"uint256\"},{\"name\":\"commitsHaltedAt\",\"type\":\"uint256\"},{\"name\":\"revealDuraton\",\"type\":\"uint256\"},{\"name\":\"revealDeadline\",\"type\":\"uint256\"},{\"name\":\"revealsHaltedAt\",\"type\":\"uint256\"},{\"name\":\"votesFor\",\"type\":\"uint256\"},{\"name\":\"votesAgainst\",\"type\":\"uint256\"},{\"name\":\"votesCommittedButNotRevealed\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_terminationDate\",\"type\":\"uint256\"}],\"name\":\"isExpired\",\"outputs\":[{\"name\":\"expired\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"revealPeriodStartedTimestamp\",\"outputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"pollEnded\",\"outputs\":[{\"name\":\"ended\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"_rbac\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"instrumentAddress\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"dataIdentifier\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"payloadHash\",\"type\":\"bytes32\"}],\"name\":\"RevealPeriodStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"secretHash\",\"type\":\"bytes32\"}],\"name\":\"VoteCommitted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"secretHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"choice\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"revealer\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"votesFor\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"votesAgainst\",\"type\":\"uint256\"}],\"name\":\"VoteRevealed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"commitDeadline\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"revealDuraton\",\"type\":\"uint256\"}],\"name\":\"PollCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"haltedBy\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"CommitPeriodHalted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"haltedBy\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"RevealPeriodHalted\",\"type\":\"event\"},{\"constant\":false,\"inputs\":[{\"name\":\"newContractAddress\",\"type\":\"address\"}],\"name\":\"transferParentAddress\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"}],\"name\":\"getPollIdentifier\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_secretHash\",\"type\":\"bytes32\"}],\"name\":\"commitVote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instruments\",\"type\":\"address[]\"},{\"name\":\"_dataIdentifiers\",\"type\":\"bytes32[]\"},{\"name\":\"_payloadHashes\",\"type\":\"bytes32[]\"},{\"name\":\"_secretHashes\",\"type\":\"bytes32[]\"}],\"name\":\"commitVotes\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"},{\"name\":\"_voteOption\",\"type\":\"uint256\"},{\"name\":\"_salt\",\"type\":\"uint256\"}],\"name\":\"revealVote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_voteOption\",\"type\":\"uint256\"},{\"name\":\"_salt\",\"type\":\"uint256\"}],\"name\":\"revealMyVote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_voters\",\"type\":\"address[]\"},{\"name\":\"_voteOptions\",\"type\":\"uint256[]\"},{\"name\":\"_salts\",\"type\":\"uint256[]\"}],\"name\":\"revealVotes\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_commitDuration\",\"type\":\"uint256\"},{\"name\":\"_revealDuration\",\"type\":\"uint256\"}],\"name\":\"startPoll\",\"outputs\":[{\"name\":\"pollID\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"}],\"name\":\"haltCommitPeriod\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"haltRevealPeriod\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
+const TruSetCommitRevealVotingABI = "[{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"commitDeadline\",\"outputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"pollExists\",\"outputs\":[{\"name\":\"exists\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"didReveal\",\"outputs\":[{\"name\":\"revealed\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"commitPeriodActive\",\"outputs\":[{\"name\":\"active\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"revealPeriodActive\",\"outputs\":[{\"name\":\"active\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_user\",\"type\":\"address\"},{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"stakedForPollID\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"VOTE_AGAINST\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"numStakersForPoll\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"commitPeriodStartedTimestamp\",\"outputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"getVoteCounts\",\"outputs\":[{\"name\":\"numForVotes\",\"type\":\"uint256\"},{\"name\":\"numAgainstVotes\",\"type\":\"uint256\"},{\"name\":\"numCommittedButNotRevealedVotes\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"getVoters\",\"outputs\":[{\"name\":\"voters\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"MAX_REVEAL_DURATION_IN_SECONDS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"didCommit\",\"outputs\":[{\"name\":\"committed\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"rbac\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"getVote\",\"outputs\":[{\"name\":\"hasVoted\",\"type\":\"bool\"},{\"name\":\"hasRevealed\",\"type\":\"bool\"},{\"name\":\"vote\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"MAX_COMMIT_DURATION_IN_SECONDS\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"}],\"name\":\"getCommitHash\",\"outputs\":[{\"name\":\"commitHash\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"revealDeadline\",\"outputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"VOTE_FOR\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"pollMap\",\"outputs\":[{\"name\":\"commitPeriodStartedAt\",\"type\":\"uint256\"},{\"name\":\"commitDuration\",\"type\":\"uint256\"},{\"name\":\"commitsHaltedAt\",\"type\":\"uint256\"},{\"name\":\"revealDuration\",\"type\":\"uint256\"},{\"name\":\"revealsHaltedAt\",\"type\":\"uint256\"},{\"name\":\"votesFor\",\"type\":\"uint256\"},{\"name\":\"votesAgainst\",\"type\":\"uint256\"},{\"name\":\"votesCommittedButNotRevealed\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_terminationDate\",\"type\":\"uint256\"}],\"name\":\"isExpired\",\"outputs\":[{\"name\":\"expired\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"revealPeriodStartedTimestamp\",\"outputs\":[{\"name\":\"timestamp\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"stakersForPoll\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"pollEnded\",\"outputs\":[{\"name\":\"ended\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"_hub\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"instrumentAddress\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"dataIdentifier\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"payloadHash\",\"type\":\"bytes32\"}],\"name\":\"RevealPeriodStarted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"action\",\"type\":\"uint8\"}],\"name\":\"Staked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"action\",\"type\":\"uint8\"}],\"name\":\"StakeReturned\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"user\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"amount\",\"type\":\"uint256\"},{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"action\",\"type\":\"uint8\"},{\"indexed\":false,\"name\":\"reason\",\"type\":\"string\"}],\"name\":\"StakeBurnt\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"secretHash\",\"type\":\"bytes32\"}],\"name\":\"VoteCommitted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"secretHash\",\"type\":\"bytes32\"},{\"indexed\":true,\"name\":\"choice\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"voter\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"revealer\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"votesFor\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"votesAgainst\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"votesCommittedButNotRevealed\",\"type\":\"uint256\"}],\"name\":\"VoteRevealed\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"creator\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"commitDuration\",\"type\":\"uint256\"},{\"indexed\":false,\"name\":\"revealDuration\",\"type\":\"uint256\"}],\"name\":\"PollCreated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"haltedBy\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"CommitPeriodHalted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"pollID\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"haltedBy\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"timestamp\",\"type\":\"uint256\"}],\"name\":\"RevealPeriodHalted\",\"type\":\"event\"},{\"constant\":true,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"}],\"name\":\"getPollIdentifier\",\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"pure\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_secretHash\",\"type\":\"bytes32\"}],\"name\":\"commitVote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instruments\",\"type\":\"address[]\"},{\"name\":\"_dataIdentifiers\",\"type\":\"bytes32[]\"},{\"name\":\"_payloadHashes\",\"type\":\"bytes32[]\"},{\"name\":\"_secretHashes\",\"type\":\"bytes32[]\"}],\"name\":\"commitVotes\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_voter\",\"type\":\"address\"},{\"name\":\"_voteOption\",\"type\":\"uint256\"},{\"name\":\"_salt\",\"type\":\"uint256\"}],\"name\":\"revealVote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_voteOption\",\"type\":\"uint256\"},{\"name\":\"_salt\",\"type\":\"uint256\"}],\"name\":\"revealMyVote\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_voters\",\"type\":\"address[]\"},{\"name\":\"_voteOptions\",\"type\":\"uint256[]\"},{\"name\":\"_salts\",\"type\":\"uint256[]\"}],\"name\":\"revealVotes\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_proposer\",\"type\":\"address\"},{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"},{\"name\":\"_commitDuration\",\"type\":\"uint256\"},{\"name\":\"_revealDuration\",\"type\":\"uint256\"}],\"name\":\"startPoll\",\"outputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_instrument\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"}],\"name\":\"haltCommitPeriod\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"haltRevealPeriod\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_user\",\"type\":\"address\"},{\"name\":\"_instrumentAddress\",\"type\":\"address\"},{\"name\":\"_dataIdentifier\",\"type\":\"bytes32\"},{\"name\":\"_payloadHash\",\"type\":\"bytes32\"}],\"name\":\"stakedForProposal\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"},{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_user\",\"type\":\"address\"},{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"returnPollStake\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"returnAllPollStakes\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_user\",\"type\":\"address\"},{\"name\":\"_pollID\",\"type\":\"bytes32\"}],\"name\":\"burnPollStake\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]"
 
 // TruSetCommitRevealVoting is an auto generated Go binding around an Ethereum contract.
 type TruSetCommitRevealVoting struct {
@@ -264,6 +264,32 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) VOTEFOR(
 	return _TruSetCommitRevealVoting.Contract.VOTEFOR(&_TruSetCommitRevealVoting.CallOpts)
 }
 
+// CommitDeadline is a free data retrieval call binding the contract method 0x01c2b6f5.
+//
+// Solidity: function commitDeadline(_pollID bytes32) constant returns(timestamp uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) CommitDeadline(opts *bind.CallOpts, _pollID [32]byte) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "commitDeadline", _pollID)
+	return *ret0, err
+}
+
+// CommitDeadline is a free data retrieval call binding the contract method 0x01c2b6f5.
+//
+// Solidity: function commitDeadline(_pollID bytes32) constant returns(timestamp uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) CommitDeadline(_pollID [32]byte) (*big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.CommitDeadline(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
+// CommitDeadline is a free data retrieval call binding the contract method 0x01c2b6f5.
+//
+// Solidity: function commitDeadline(_pollID bytes32) constant returns(timestamp uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) CommitDeadline(_pollID [32]byte) (*big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.CommitDeadline(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
 // CommitPeriodActive is a free data retrieval call binding the contract method 0x16879344.
 //
 // Solidity: function commitPeriodActive(_pollID bytes32) constant returns(active bool)
@@ -422,27 +448,41 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) GetPollI
 
 // GetVote is a free data retrieval call binding the contract method 0xb3e7c2bd.
 //
-// Solidity: function getVote(_pollID bytes32, _voter address) constant returns(vote uint256)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) GetVote(opts *bind.CallOpts, _pollID [32]byte, _voter common.Address) (*big.Int, error) {
-	var (
-		ret0 = new(*big.Int)
-	)
-	out := ret0
+// Solidity: function getVote(_pollID bytes32, _voter address) constant returns(hasVoted bool, hasRevealed bool, vote uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) GetVote(opts *bind.CallOpts, _pollID [32]byte, _voter common.Address) (struct {
+	HasVoted    bool
+	HasRevealed bool
+	Vote        *big.Int
+}, error) {
+	ret := new(struct {
+		HasVoted    bool
+		HasRevealed bool
+		Vote        *big.Int
+	})
+	out := ret
 	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "getVote", _pollID, _voter)
-	return *ret0, err
+	return *ret, err
 }
 
 // GetVote is a free data retrieval call binding the contract method 0xb3e7c2bd.
 //
-// Solidity: function getVote(_pollID bytes32, _voter address) constant returns(vote uint256)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) GetVote(_pollID [32]byte, _voter common.Address) (*big.Int, error) {
+// Solidity: function getVote(_pollID bytes32, _voter address) constant returns(hasVoted bool, hasRevealed bool, vote uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) GetVote(_pollID [32]byte, _voter common.Address) (struct {
+	HasVoted    bool
+	HasRevealed bool
+	Vote        *big.Int
+}, error) {
 	return _TruSetCommitRevealVoting.Contract.GetVote(&_TruSetCommitRevealVoting.CallOpts, _pollID, _voter)
 }
 
 // GetVote is a free data retrieval call binding the contract method 0xb3e7c2bd.
 //
-// Solidity: function getVote(_pollID bytes32, _voter address) constant returns(vote uint256)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) GetVote(_pollID [32]byte, _voter common.Address) (*big.Int, error) {
+// Solidity: function getVote(_pollID bytes32, _voter address) constant returns(hasVoted bool, hasRevealed bool, vote uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) GetVote(_pollID [32]byte, _voter common.Address) (struct {
+	HasVoted    bool
+	HasRevealed bool
+	Vote        *big.Int
+}, error) {
 	return _TruSetCommitRevealVoting.Contract.GetVote(&_TruSetCommitRevealVoting.CallOpts, _pollID, _voter)
 }
 
@@ -538,6 +578,32 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) IsExpire
 	return _TruSetCommitRevealVoting.Contract.IsExpired(&_TruSetCommitRevealVoting.CallOpts, _terminationDate)
 }
 
+// NumStakersForPoll is a free data retrieval call binding the contract method 0x5eface14.
+//
+// Solidity: function numStakersForPoll(_pollID bytes32) constant returns(uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) NumStakersForPoll(opts *bind.CallOpts, _pollID [32]byte) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "numStakersForPoll", _pollID)
+	return *ret0, err
+}
+
+// NumStakersForPoll is a free data retrieval call binding the contract method 0x5eface14.
+//
+// Solidity: function numStakersForPoll(_pollID bytes32) constant returns(uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) NumStakersForPoll(_pollID [32]byte) (*big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.NumStakersForPoll(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
+// NumStakersForPoll is a free data retrieval call binding the contract method 0x5eface14.
+//
+// Solidity: function numStakersForPoll(_pollID bytes32) constant returns(uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) NumStakersForPoll(_pollID [32]byte) (*big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.NumStakersForPoll(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
 // PollEnded is a free data retrieval call binding the contract method 0xfd2cee78.
 //
 // Solidity: function pollEnded(_pollID bytes32) constant returns(ended bool)
@@ -592,13 +658,12 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) PollExis
 
 // PollMap is a free data retrieval call binding the contract method 0xd2b77264.
 //
-// Solidity: function pollMap( bytes32) constant returns(commitPeriodStartedAt uint256, commitDeadline uint256, commitsHaltedAt uint256, revealDuraton uint256, revealDeadline uint256, revealsHaltedAt uint256, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
+// Solidity: function pollMap( bytes32) constant returns(commitPeriodStartedAt uint256, commitDuration uint256, commitsHaltedAt uint256, revealDuration uint256, revealsHaltedAt uint256, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) PollMap(opts *bind.CallOpts, arg0 [32]byte) (struct {
 	CommitPeriodStartedAt        *big.Int
-	CommitDeadline               *big.Int
+	CommitDuration               *big.Int
 	CommitsHaltedAt              *big.Int
-	RevealDuraton                *big.Int
-	RevealDeadline               *big.Int
+	RevealDuration               *big.Int
 	RevealsHaltedAt              *big.Int
 	VotesFor                     *big.Int
 	VotesAgainst                 *big.Int
@@ -606,10 +671,9 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) PollMap(opts *b
 }, error) {
 	ret := new(struct {
 		CommitPeriodStartedAt        *big.Int
-		CommitDeadline               *big.Int
+		CommitDuration               *big.Int
 		CommitsHaltedAt              *big.Int
-		RevealDuraton                *big.Int
-		RevealDeadline               *big.Int
+		RevealDuration               *big.Int
 		RevealsHaltedAt              *big.Int
 		VotesFor                     *big.Int
 		VotesAgainst                 *big.Int
@@ -622,13 +686,12 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) PollMap(opts *b
 
 // PollMap is a free data retrieval call binding the contract method 0xd2b77264.
 //
-// Solidity: function pollMap( bytes32) constant returns(commitPeriodStartedAt uint256, commitDeadline uint256, commitsHaltedAt uint256, revealDuraton uint256, revealDeadline uint256, revealsHaltedAt uint256, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
+// Solidity: function pollMap( bytes32) constant returns(commitPeriodStartedAt uint256, commitDuration uint256, commitsHaltedAt uint256, revealDuration uint256, revealsHaltedAt uint256, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) PollMap(arg0 [32]byte) (struct {
 	CommitPeriodStartedAt        *big.Int
-	CommitDeadline               *big.Int
+	CommitDuration               *big.Int
 	CommitsHaltedAt              *big.Int
-	RevealDuraton                *big.Int
-	RevealDeadline               *big.Int
+	RevealDuration               *big.Int
 	RevealsHaltedAt              *big.Int
 	VotesFor                     *big.Int
 	VotesAgainst                 *big.Int
@@ -639,13 +702,12 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) PollMap(arg0 [
 
 // PollMap is a free data retrieval call binding the contract method 0xd2b77264.
 //
-// Solidity: function pollMap( bytes32) constant returns(commitPeriodStartedAt uint256, commitDeadline uint256, commitsHaltedAt uint256, revealDuraton uint256, revealDeadline uint256, revealsHaltedAt uint256, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
+// Solidity: function pollMap( bytes32) constant returns(commitPeriodStartedAt uint256, commitDuration uint256, commitsHaltedAt uint256, revealDuration uint256, revealsHaltedAt uint256, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) PollMap(arg0 [32]byte) (struct {
 	CommitPeriodStartedAt        *big.Int
-	CommitDeadline               *big.Int
+	CommitDuration               *big.Int
 	CommitsHaltedAt              *big.Int
-	RevealDuraton                *big.Int
-	RevealDeadline               *big.Int
+	RevealDuration               *big.Int
 	RevealsHaltedAt              *big.Int
 	VotesFor                     *big.Int
 	VotesAgainst                 *big.Int
@@ -678,6 +740,32 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) Rbac() (common
 // Solidity: function rbac() constant returns(address)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) Rbac() (common.Address, error) {
 	return _TruSetCommitRevealVoting.Contract.Rbac(&_TruSetCommitRevealVoting.CallOpts)
+}
+
+// RevealDeadline is a free data retrieval call binding the contract method 0xcb27bdc1.
+//
+// Solidity: function revealDeadline(_pollID bytes32) constant returns(timestamp uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) RevealDeadline(opts *bind.CallOpts, _pollID [32]byte) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "revealDeadline", _pollID)
+	return *ret0, err
+}
+
+// RevealDeadline is a free data retrieval call binding the contract method 0xcb27bdc1.
+//
+// Solidity: function revealDeadline(_pollID bytes32) constant returns(timestamp uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) RevealDeadline(_pollID [32]byte) (*big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.RevealDeadline(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
+// RevealDeadline is a free data retrieval call binding the contract method 0xcb27bdc1.
+//
+// Solidity: function revealDeadline(_pollID bytes32) constant returns(timestamp uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) RevealDeadline(_pollID [32]byte) (*big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.RevealDeadline(&_TruSetCommitRevealVoting.CallOpts, _pollID)
 }
 
 // RevealPeriodActive is a free data retrieval call binding the contract method 0x28fbf28a.
@@ -730,6 +818,113 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) RevealPeriodSt
 // Solidity: function revealPeriodStartedTimestamp(_pollID bytes32) constant returns(timestamp uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) RevealPeriodStartedTimestamp(_pollID [32]byte) (*big.Int, error) {
 	return _TruSetCommitRevealVoting.Contract.RevealPeriodStartedTimestamp(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
+// StakedForPollID is a free data retrieval call binding the contract method 0x3c2dba23.
+//
+// Solidity: function stakedForPollID(_user address, _pollID bytes32) constant returns(uint8, uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) StakedForPollID(opts *bind.CallOpts, _user common.Address, _pollID [32]byte) (uint8, *big.Int, error) {
+	var (
+		ret0 = new(uint8)
+		ret1 = new(*big.Int)
+	)
+	out := &[]interface{}{
+		ret0,
+		ret1,
+	}
+	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "stakedForPollID", _user, _pollID)
+	return *ret0, *ret1, err
+}
+
+// StakedForPollID is a free data retrieval call binding the contract method 0x3c2dba23.
+//
+// Solidity: function stakedForPollID(_user address, _pollID bytes32) constant returns(uint8, uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) StakedForPollID(_user common.Address, _pollID [32]byte) (uint8, *big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.StakedForPollID(&_TruSetCommitRevealVoting.CallOpts, _user, _pollID)
+}
+
+// StakedForPollID is a free data retrieval call binding the contract method 0x3c2dba23.
+//
+// Solidity: function stakedForPollID(_user address, _pollID bytes32) constant returns(uint8, uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) StakedForPollID(_user common.Address, _pollID [32]byte) (uint8, *big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.StakedForPollID(&_TruSetCommitRevealVoting.CallOpts, _user, _pollID)
+}
+
+// StakedForProposal is a free data retrieval call binding the contract method 0xbe6c03ff.
+//
+// Solidity: function stakedForProposal(_user address, _instrumentAddress address, _dataIdentifier bytes32, _payloadHash bytes32) constant returns(uint8, uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) StakedForProposal(opts *bind.CallOpts, _user common.Address, _instrumentAddress common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte) (uint8, *big.Int, error) {
+	var (
+		ret0 = new(uint8)
+		ret1 = new(*big.Int)
+	)
+	out := &[]interface{}{
+		ret0,
+		ret1,
+	}
+	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "stakedForProposal", _user, _instrumentAddress, _dataIdentifier, _payloadHash)
+	return *ret0, *ret1, err
+}
+
+// StakedForProposal is a free data retrieval call binding the contract method 0xbe6c03ff.
+//
+// Solidity: function stakedForProposal(_user address, _instrumentAddress address, _dataIdentifier bytes32, _payloadHash bytes32) constant returns(uint8, uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) StakedForProposal(_user common.Address, _instrumentAddress common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte) (uint8, *big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.StakedForProposal(&_TruSetCommitRevealVoting.CallOpts, _user, _instrumentAddress, _dataIdentifier, _payloadHash)
+}
+
+// StakedForProposal is a free data retrieval call binding the contract method 0xbe6c03ff.
+//
+// Solidity: function stakedForProposal(_user address, _instrumentAddress address, _dataIdentifier bytes32, _payloadHash bytes32) constant returns(uint8, uint256)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) StakedForProposal(_user common.Address, _instrumentAddress common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte) (uint8, *big.Int, error) {
+	return _TruSetCommitRevealVoting.Contract.StakedForProposal(&_TruSetCommitRevealVoting.CallOpts, _user, _instrumentAddress, _dataIdentifier, _payloadHash)
+}
+
+// StakersForPoll is a free data retrieval call binding the contract method 0xef5850c7.
+//
+// Solidity: function stakersForPoll(_pollID bytes32) constant returns(address[])
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCaller) StakersForPoll(opts *bind.CallOpts, _pollID [32]byte) ([]common.Address, error) {
+	var (
+		ret0 = new([]common.Address)
+	)
+	out := ret0
+	err := _TruSetCommitRevealVoting.contract.Call(opts, out, "stakersForPoll", _pollID)
+	return *ret0, err
+}
+
+// StakersForPoll is a free data retrieval call binding the contract method 0xef5850c7.
+//
+// Solidity: function stakersForPoll(_pollID bytes32) constant returns(address[])
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) StakersForPoll(_pollID [32]byte) ([]common.Address, error) {
+	return _TruSetCommitRevealVoting.Contract.StakersForPoll(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
+// StakersForPoll is a free data retrieval call binding the contract method 0xef5850c7.
+//
+// Solidity: function stakersForPoll(_pollID bytes32) constant returns(address[])
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingCallerSession) StakersForPoll(_pollID [32]byte) ([]common.Address, error) {
+	return _TruSetCommitRevealVoting.Contract.StakersForPoll(&_TruSetCommitRevealVoting.CallOpts, _pollID)
+}
+
+// BurnPollStake is a paid mutator transaction binding the contract method 0x52f804a8.
+//
+// Solidity: function burnPollStake(_user address, _pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactor) BurnPollStake(opts *bind.TransactOpts, _user common.Address, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.contract.Transact(opts, "burnPollStake", _user, _pollID)
+}
+
+// BurnPollStake is a paid mutator transaction binding the contract method 0x52f804a8.
+//
+// Solidity: function burnPollStake(_user address, _pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) BurnPollStake(_user common.Address, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.BurnPollStake(&_TruSetCommitRevealVoting.TransactOpts, _user, _pollID)
+}
+
+// BurnPollStake is a paid mutator transaction binding the contract method 0x52f804a8.
+//
+// Solidity: function burnPollStake(_user address, _pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) BurnPollStake(_user common.Address, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.BurnPollStake(&_TruSetCommitRevealVoting.TransactOpts, _user, _pollID)
 }
 
 // CommitVote is a paid mutator transaction binding the contract method 0x2ab24e3b.
@@ -816,6 +1011,48 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) Halt
 	return _TruSetCommitRevealVoting.Contract.HaltRevealPeriod(&_TruSetCommitRevealVoting.TransactOpts, _pollID)
 }
 
+// ReturnAllPollStakes is a paid mutator transaction binding the contract method 0x4f88cc3c.
+//
+// Solidity: function returnAllPollStakes(_pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactor) ReturnAllPollStakes(opts *bind.TransactOpts, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.contract.Transact(opts, "returnAllPollStakes", _pollID)
+}
+
+// ReturnAllPollStakes is a paid mutator transaction binding the contract method 0x4f88cc3c.
+//
+// Solidity: function returnAllPollStakes(_pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) ReturnAllPollStakes(_pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.ReturnAllPollStakes(&_TruSetCommitRevealVoting.TransactOpts, _pollID)
+}
+
+// ReturnAllPollStakes is a paid mutator transaction binding the contract method 0x4f88cc3c.
+//
+// Solidity: function returnAllPollStakes(_pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) ReturnAllPollStakes(_pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.ReturnAllPollStakes(&_TruSetCommitRevealVoting.TransactOpts, _pollID)
+}
+
+// ReturnPollStake is a paid mutator transaction binding the contract method 0x973882e9.
+//
+// Solidity: function returnPollStake(_user address, _pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactor) ReturnPollStake(opts *bind.TransactOpts, _user common.Address, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.contract.Transact(opts, "returnPollStake", _user, _pollID)
+}
+
+// ReturnPollStake is a paid mutator transaction binding the contract method 0x973882e9.
+//
+// Solidity: function returnPollStake(_user address, _pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) ReturnPollStake(_user common.Address, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.ReturnPollStake(&_TruSetCommitRevealVoting.TransactOpts, _user, _pollID)
+}
+
+// ReturnPollStake is a paid mutator transaction binding the contract method 0x973882e9.
+//
+// Solidity: function returnPollStake(_user address, _pollID bytes32) returns(bool)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) ReturnPollStake(_user common.Address, _pollID [32]byte) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.ReturnPollStake(&_TruSetCommitRevealVoting.TransactOpts, _user, _pollID)
+}
+
 // RevealMyVote is a paid mutator transaction binding the contract method 0x04c64e25.
 //
 // Solidity: function revealMyVote(_instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _voteOption uint256, _salt uint256) returns()
@@ -879,46 +1116,25 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) Reve
 	return _TruSetCommitRevealVoting.Contract.RevealVotes(&_TruSetCommitRevealVoting.TransactOpts, _instrument, _dataIdentifier, _payloadHash, _voters, _voteOptions, _salts)
 }
 
-// StartPoll is a paid mutator transaction binding the contract method 0x2e2c51b0.
+// StartPoll is a paid mutator transaction binding the contract method 0xbb2ced25.
 //
-// Solidity: function startPoll(_instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _commitDuration uint256, _revealDuration uint256) returns(pollID bytes32)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactor) StartPoll(opts *bind.TransactOpts, _instrument common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte, _commitDuration *big.Int, _revealDuration *big.Int) (*types.Transaction, error) {
-	return _TruSetCommitRevealVoting.contract.Transact(opts, "startPoll", _instrument, _dataIdentifier, _payloadHash, _commitDuration, _revealDuration)
+// Solidity: function startPoll(_proposer address, _instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _commitDuration uint256, _revealDuration uint256) returns(_pollID bytes32)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactor) StartPoll(opts *bind.TransactOpts, _proposer common.Address, _instrument common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte, _commitDuration *big.Int, _revealDuration *big.Int) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.contract.Transact(opts, "startPoll", _proposer, _instrument, _dataIdentifier, _payloadHash, _commitDuration, _revealDuration)
 }
 
-// StartPoll is a paid mutator transaction binding the contract method 0x2e2c51b0.
+// StartPoll is a paid mutator transaction binding the contract method 0xbb2ced25.
 //
-// Solidity: function startPoll(_instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _commitDuration uint256, _revealDuration uint256) returns(pollID bytes32)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) StartPoll(_instrument common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte, _commitDuration *big.Int, _revealDuration *big.Int) (*types.Transaction, error) {
-	return _TruSetCommitRevealVoting.Contract.StartPoll(&_TruSetCommitRevealVoting.TransactOpts, _instrument, _dataIdentifier, _payloadHash, _commitDuration, _revealDuration)
+// Solidity: function startPoll(_proposer address, _instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _commitDuration uint256, _revealDuration uint256) returns(_pollID bytes32)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) StartPoll(_proposer common.Address, _instrument common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte, _commitDuration *big.Int, _revealDuration *big.Int) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.StartPoll(&_TruSetCommitRevealVoting.TransactOpts, _proposer, _instrument, _dataIdentifier, _payloadHash, _commitDuration, _revealDuration)
 }
 
-// StartPoll is a paid mutator transaction binding the contract method 0x2e2c51b0.
+// StartPoll is a paid mutator transaction binding the contract method 0xbb2ced25.
 //
-// Solidity: function startPoll(_instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _commitDuration uint256, _revealDuration uint256) returns(pollID bytes32)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) StartPoll(_instrument common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte, _commitDuration *big.Int, _revealDuration *big.Int) (*types.Transaction, error) {
-	return _TruSetCommitRevealVoting.Contract.StartPoll(&_TruSetCommitRevealVoting.TransactOpts, _instrument, _dataIdentifier, _payloadHash, _commitDuration, _revealDuration)
-}
-
-// TransferParentAddress is a paid mutator transaction binding the contract method 0x5ef3eb67.
-//
-// Solidity: function transferParentAddress(newContractAddress address) returns(address)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactor) TransferParentAddress(opts *bind.TransactOpts, newContractAddress common.Address) (*types.Transaction, error) {
-	return _TruSetCommitRevealVoting.contract.Transact(opts, "transferParentAddress", newContractAddress)
-}
-
-// TransferParentAddress is a paid mutator transaction binding the contract method 0x5ef3eb67.
-//
-// Solidity: function transferParentAddress(newContractAddress address) returns(address)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingSession) TransferParentAddress(newContractAddress common.Address) (*types.Transaction, error) {
-	return _TruSetCommitRevealVoting.Contract.TransferParentAddress(&_TruSetCommitRevealVoting.TransactOpts, newContractAddress)
-}
-
-// TransferParentAddress is a paid mutator transaction binding the contract method 0x5ef3eb67.
-//
-// Solidity: function transferParentAddress(newContractAddress address) returns(address)
-func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) TransferParentAddress(newContractAddress common.Address) (*types.Transaction, error) {
-	return _TruSetCommitRevealVoting.Contract.TransferParentAddress(&_TruSetCommitRevealVoting.TransactOpts, newContractAddress)
+// Solidity: function startPoll(_proposer address, _instrument address, _dataIdentifier bytes32, _payloadHash bytes32, _commitDuration uint256, _revealDuration uint256) returns(_pollID bytes32)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingTransactorSession) StartPoll(_proposer common.Address, _instrument common.Address, _dataIdentifier [32]byte, _payloadHash [32]byte, _commitDuration *big.Int, _revealDuration *big.Int) (*types.Transaction, error) {
+	return _TruSetCommitRevealVoting.Contract.StartPoll(&_TruSetCommitRevealVoting.TransactOpts, _proposer, _instrument, _dataIdentifier, _payloadHash, _commitDuration, _revealDuration)
 }
 
 // TruSetCommitRevealVotingCommitPeriodHaltedIterator is returned from FilterCommitPeriodHalted and is used to iterate over the raw logs and unpacked data for CommitPeriodHalted events raised by the TruSetCommitRevealVoting contract.
@@ -1126,14 +1342,14 @@ func (it *TruSetCommitRevealVotingPollCreatedIterator) Close() error {
 type TruSetCommitRevealVotingPollCreated struct {
 	PollID         [32]byte
 	Creator        common.Address
-	CommitDeadline *big.Int
-	RevealDuraton  *big.Int
+	CommitDuration *big.Int
+	RevealDuration *big.Int
 	Raw            types.Log // Blockchain specific contextual infos
 }
 
 // FilterPollCreated is a free log retrieval operation binding the contract event 0xb63cd7eae18e725657860cbbf12d757b6e516f142db7fd8cabd61fb5d93c24e9.
 //
-// Solidity: e PollCreated(pollID indexed bytes32, creator address, commitDeadline uint256, revealDuraton uint256)
+// Solidity: e PollCreated(pollID indexed bytes32, creator address, commitDuration uint256, revealDuration uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterPollCreated(opts *bind.FilterOpts, pollID [][32]byte) (*TruSetCommitRevealVotingPollCreatedIterator, error) {
 
 	var pollIDRule []interface{}
@@ -1150,7 +1366,7 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterPollCre
 
 // WatchPollCreated is a free log subscription operation binding the contract event 0xb63cd7eae18e725657860cbbf12d757b6e516f142db7fd8cabd61fb5d93c24e9.
 //
-// Solidity: e PollCreated(pollID indexed bytes32, creator address, commitDeadline uint256, revealDuraton uint256)
+// Solidity: e PollCreated(pollID indexed bytes32, creator address, commitDuration uint256, revealDuration uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) WatchPollCreated(opts *bind.WatchOpts, sink chan<- *TruSetCommitRevealVotingPollCreated, pollID [][32]byte) (event.Subscription, error) {
 
 	var pollIDRule []interface{}
@@ -1467,6 +1683,442 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) WatchRevealPe
 	}), nil
 }
 
+// TruSetCommitRevealVotingStakeBurntIterator is returned from FilterStakeBurnt and is used to iterate over the raw logs and unpacked data for StakeBurnt events raised by the TruSetCommitRevealVoting contract.
+type TruSetCommitRevealVotingStakeBurntIterator struct {
+	Event *TruSetCommitRevealVotingStakeBurnt // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TruSetCommitRevealVotingStakeBurntIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TruSetCommitRevealVotingStakeBurnt)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TruSetCommitRevealVotingStakeBurnt)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TruSetCommitRevealVotingStakeBurntIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TruSetCommitRevealVotingStakeBurntIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TruSetCommitRevealVotingStakeBurnt represents a StakeBurnt event raised by the TruSetCommitRevealVoting contract.
+type TruSetCommitRevealVotingStakeBurnt struct {
+	User   common.Address
+	Amount *big.Int
+	PollID [32]byte
+	Action uint8
+	Reason string
+	Raw    types.Log // Blockchain specific contextual infos
+}
+
+// FilterStakeBurnt is a free log retrieval operation binding the contract event 0x98b9e629a6a2ee5cbb9ad28c2318b43f55958d4a24a403b03267b512224bea59.
+//
+// Solidity: e StakeBurnt(user indexed address, amount uint256, pollID indexed bytes32, action uint8, reason string)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterStakeBurnt(opts *bind.FilterOpts, user []common.Address, pollID [][32]byte) (*TruSetCommitRevealVotingStakeBurntIterator, error) {
+
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	var pollIDRule []interface{}
+	for _, pollIDItem := range pollID {
+		pollIDRule = append(pollIDRule, pollIDItem)
+	}
+
+	logs, sub, err := _TruSetCommitRevealVoting.contract.FilterLogs(opts, "StakeBurnt", userRule, pollIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return &TruSetCommitRevealVotingStakeBurntIterator{contract: _TruSetCommitRevealVoting.contract, event: "StakeBurnt", logs: logs, sub: sub}, nil
+}
+
+// WatchStakeBurnt is a free log subscription operation binding the contract event 0x98b9e629a6a2ee5cbb9ad28c2318b43f55958d4a24a403b03267b512224bea59.
+//
+// Solidity: e StakeBurnt(user indexed address, amount uint256, pollID indexed bytes32, action uint8, reason string)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) WatchStakeBurnt(opts *bind.WatchOpts, sink chan<- *TruSetCommitRevealVotingStakeBurnt, user []common.Address, pollID [][32]byte) (event.Subscription, error) {
+
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	var pollIDRule []interface{}
+	for _, pollIDItem := range pollID {
+		pollIDRule = append(pollIDRule, pollIDItem)
+	}
+
+	logs, sub, err := _TruSetCommitRevealVoting.contract.WatchLogs(opts, "StakeBurnt", userRule, pollIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TruSetCommitRevealVotingStakeBurnt)
+				if err := _TruSetCommitRevealVoting.contract.UnpackLog(event, "StakeBurnt", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// TruSetCommitRevealVotingStakeReturnedIterator is returned from FilterStakeReturned and is used to iterate over the raw logs and unpacked data for StakeReturned events raised by the TruSetCommitRevealVoting contract.
+type TruSetCommitRevealVotingStakeReturnedIterator struct {
+	Event *TruSetCommitRevealVotingStakeReturned // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TruSetCommitRevealVotingStakeReturnedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TruSetCommitRevealVotingStakeReturned)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TruSetCommitRevealVotingStakeReturned)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TruSetCommitRevealVotingStakeReturnedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TruSetCommitRevealVotingStakeReturnedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TruSetCommitRevealVotingStakeReturned represents a StakeReturned event raised by the TruSetCommitRevealVoting contract.
+type TruSetCommitRevealVotingStakeReturned struct {
+	User   common.Address
+	Amount *big.Int
+	PollID [32]byte
+	Action uint8
+	Raw    types.Log // Blockchain specific contextual infos
+}
+
+// FilterStakeReturned is a free log retrieval operation binding the contract event 0x3db9f61f4d7052d2a81173036ad7e9e276cd26a7079a316526549ca581f4b36d.
+//
+// Solidity: e StakeReturned(user indexed address, amount uint256, pollID indexed bytes32, action uint8)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterStakeReturned(opts *bind.FilterOpts, user []common.Address, pollID [][32]byte) (*TruSetCommitRevealVotingStakeReturnedIterator, error) {
+
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	var pollIDRule []interface{}
+	for _, pollIDItem := range pollID {
+		pollIDRule = append(pollIDRule, pollIDItem)
+	}
+
+	logs, sub, err := _TruSetCommitRevealVoting.contract.FilterLogs(opts, "StakeReturned", userRule, pollIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return &TruSetCommitRevealVotingStakeReturnedIterator{contract: _TruSetCommitRevealVoting.contract, event: "StakeReturned", logs: logs, sub: sub}, nil
+}
+
+// WatchStakeReturned is a free log subscription operation binding the contract event 0x3db9f61f4d7052d2a81173036ad7e9e276cd26a7079a316526549ca581f4b36d.
+//
+// Solidity: e StakeReturned(user indexed address, amount uint256, pollID indexed bytes32, action uint8)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) WatchStakeReturned(opts *bind.WatchOpts, sink chan<- *TruSetCommitRevealVotingStakeReturned, user []common.Address, pollID [][32]byte) (event.Subscription, error) {
+
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	var pollIDRule []interface{}
+	for _, pollIDItem := range pollID {
+		pollIDRule = append(pollIDRule, pollIDItem)
+	}
+
+	logs, sub, err := _TruSetCommitRevealVoting.contract.WatchLogs(opts, "StakeReturned", userRule, pollIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TruSetCommitRevealVotingStakeReturned)
+				if err := _TruSetCommitRevealVoting.contract.UnpackLog(event, "StakeReturned", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// TruSetCommitRevealVotingStakedIterator is returned from FilterStaked and is used to iterate over the raw logs and unpacked data for Staked events raised by the TruSetCommitRevealVoting contract.
+type TruSetCommitRevealVotingStakedIterator struct {
+	Event *TruSetCommitRevealVotingStaked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TruSetCommitRevealVotingStakedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TruSetCommitRevealVotingStaked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TruSetCommitRevealVotingStaked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TruSetCommitRevealVotingStakedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TruSetCommitRevealVotingStakedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TruSetCommitRevealVotingStaked represents a Staked event raised by the TruSetCommitRevealVoting contract.
+type TruSetCommitRevealVotingStaked struct {
+	User   common.Address
+	Amount *big.Int
+	PollID [32]byte
+	Action uint8
+	Raw    types.Log // Blockchain specific contextual infos
+}
+
+// FilterStaked is a free log retrieval operation binding the contract event 0xffcaaa0c4ca25b5827074c948fc6acd7c25db62ecf524f4469ff88dfbd8346a6.
+//
+// Solidity: e Staked(user indexed address, amount uint256, pollID indexed bytes32, action uint8)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterStaked(opts *bind.FilterOpts, user []common.Address, pollID [][32]byte) (*TruSetCommitRevealVotingStakedIterator, error) {
+
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	var pollIDRule []interface{}
+	for _, pollIDItem := range pollID {
+		pollIDRule = append(pollIDRule, pollIDItem)
+	}
+
+	logs, sub, err := _TruSetCommitRevealVoting.contract.FilterLogs(opts, "Staked", userRule, pollIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return &TruSetCommitRevealVotingStakedIterator{contract: _TruSetCommitRevealVoting.contract, event: "Staked", logs: logs, sub: sub}, nil
+}
+
+// WatchStaked is a free log subscription operation binding the contract event 0xffcaaa0c4ca25b5827074c948fc6acd7c25db62ecf524f4469ff88dfbd8346a6.
+//
+// Solidity: e Staked(user indexed address, amount uint256, pollID indexed bytes32, action uint8)
+func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) WatchStaked(opts *bind.WatchOpts, sink chan<- *TruSetCommitRevealVotingStaked, user []common.Address, pollID [][32]byte) (event.Subscription, error) {
+
+	var userRule []interface{}
+	for _, userItem := range user {
+		userRule = append(userRule, userItem)
+	}
+
+	var pollIDRule []interface{}
+	for _, pollIDItem := range pollID {
+		pollIDRule = append(pollIDRule, pollIDItem)
+	}
+
+	logs, sub, err := _TruSetCommitRevealVoting.contract.WatchLogs(opts, "Staked", userRule, pollIDRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TruSetCommitRevealVotingStaked)
+				if err := _TruSetCommitRevealVoting.contract.UnpackLog(event, "Staked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
 // TruSetCommitRevealVotingVoteCommittedIterator is returned from FilterVoteCommitted and is used to iterate over the raw logs and unpacked data for VoteCommitted events raised by the TruSetCommitRevealVoting contract.
 type TruSetCommitRevealVotingVoteCommittedIterator struct {
 	Event *TruSetCommitRevealVotingVoteCommitted // Event containing the contract specifics and raw log
@@ -1686,19 +2338,20 @@ func (it *TruSetCommitRevealVotingVoteRevealedIterator) Close() error {
 
 // TruSetCommitRevealVotingVoteRevealed represents a VoteRevealed event raised by the TruSetCommitRevealVoting contract.
 type TruSetCommitRevealVotingVoteRevealed struct {
-	PollID       [32]byte
-	SecretHash   [32]byte
-	Choice       *big.Int
-	Voter        common.Address
-	Revealer     common.Address
-	VotesFor     *big.Int
-	VotesAgainst *big.Int
-	Raw          types.Log // Blockchain specific contextual infos
+	PollID                       [32]byte
+	SecretHash                   [32]byte
+	Choice                       *big.Int
+	Voter                        common.Address
+	Revealer                     common.Address
+	VotesFor                     *big.Int
+	VotesAgainst                 *big.Int
+	VotesCommittedButNotRevealed *big.Int
+	Raw                          types.Log // Blockchain specific contextual infos
 }
 
-// FilterVoteRevealed is a free log retrieval operation binding the contract event 0xdfff9053221b3aac2ac7852a7dec7932ce6d01e9bda2e6256485639d80ff8f7b.
+// FilterVoteRevealed is a free log retrieval operation binding the contract event 0x7656c59ff19441c541f32aebe589dbafba2d1a195276586916a69f3affc6c559.
 //
-// Solidity: e VoteRevealed(pollID indexed bytes32, secretHash indexed bytes32, choice indexed uint256, voter address, revealer address, votesFor uint256, votesAgainst uint256)
+// Solidity: e VoteRevealed(pollID indexed bytes32, secretHash indexed bytes32, choice indexed uint256, voter address, revealer address, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterVoteRevealed(opts *bind.FilterOpts, pollID [][32]byte, secretHash [][32]byte, choice []*big.Int) (*TruSetCommitRevealVotingVoteRevealedIterator, error) {
 
 	var pollIDRule []interface{}
@@ -1721,9 +2374,9 @@ func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) FilterVoteRev
 	return &TruSetCommitRevealVotingVoteRevealedIterator{contract: _TruSetCommitRevealVoting.contract, event: "VoteRevealed", logs: logs, sub: sub}, nil
 }
 
-// WatchVoteRevealed is a free log subscription operation binding the contract event 0xdfff9053221b3aac2ac7852a7dec7932ce6d01e9bda2e6256485639d80ff8f7b.
+// WatchVoteRevealed is a free log subscription operation binding the contract event 0x7656c59ff19441c541f32aebe589dbafba2d1a195276586916a69f3affc6c559.
 //
-// Solidity: e VoteRevealed(pollID indexed bytes32, secretHash indexed bytes32, choice indexed uint256, voter address, revealer address, votesFor uint256, votesAgainst uint256)
+// Solidity: e VoteRevealed(pollID indexed bytes32, secretHash indexed bytes32, choice indexed uint256, voter address, revealer address, votesFor uint256, votesAgainst uint256, votesCommittedButNotRevealed uint256)
 func (_TruSetCommitRevealVoting *TruSetCommitRevealVotingFilterer) WatchVoteRevealed(opts *bind.WatchOpts, sink chan<- *TruSetCommitRevealVotingVoteRevealed, pollID [][32]byte, secretHash [][32]byte, choice []*big.Int) (event.Subscription, error) {
 
 	var pollIDRule []interface{}
