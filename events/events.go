@@ -315,8 +315,6 @@ func ProcessFutureEvents() {
 	// Uncomment to mock websockets connection errors
 	// testChan := make(chan bool)
 	// go sleepThenSendTrueTo(time.Duration(20)*time.Second, testChan)
-
-retryLoop:
 	for {
 		log.Println("Log subscription starting")
 		subscriptionTime := time.Now()
@@ -353,8 +351,8 @@ retryLoop:
 		// and re-subscribe for events.
 		secondsSinceLastFailure := time.Since(subscriptionTime).Seconds()
 		if secondsSinceLastFailure < 1 {
-			log.Printf("It has been only %v seconds since our previous failure. Exiting.", secondsSinceLastFailure)
-			break retryLoop
+			log.Printf("It has been only %v seconds since our previous failure. Sleeping.", secondsSinceLastFailure)
+			time.Sleep(time.Duration(10) * time.Second)
 		}
 
 		dialClient(clientString)
