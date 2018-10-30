@@ -67,6 +67,10 @@ func main() {
 
 	// Uncomment to create some test data
 	//database.SetupTestData()
+	// Run a REST server to serve TruSet API requests
+	// Do this before processing our backlog, otherwise Heroku thinks we are taking too long to start
+	r := SetupRouter()
+	go r.Run(":" + *port) // listen and serve on 0.0.0.0:8080 by default
 
 	// Read data from all past events and reveal any we have not already revealed.
 	// This allows us to catch up automatically on lost logs whenever we restart.
@@ -78,11 +82,7 @@ func main() {
 	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
 	events.ProcessPastEvents()
 
-	go events.ProcessFutureEvents()
-
-	// Run a REST server to serve TruSet API requests
-	r := SetupRouter()
-	r.Run(":" + *port) // listen and serve on 0.0.0.0:8080 by default
+	events.ProcessFutureEvents()
 }
 
 func SetupDB(postgresUri string) *gorm.DB {
