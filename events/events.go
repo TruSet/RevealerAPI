@@ -105,9 +105,9 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 
 func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 	if l.Removed {
-		// TODO: need to handle chain re-organisations gracefully by undoing the affected database change!
-		// For now we expect this to be uncommon and would rather die than provide incorrect data
-		log.Fatalf("Found removed flag on log %+v", l)
+		// There has been a chain re-org but we don't really care
+		// We will re-process this log if/when we see it included in the chain again
+		return
 	}
 
 	switch l.Topics[0] {
