@@ -33,6 +33,7 @@ func main() {
 
 	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
 	port := flag.String("p", "8080", "Specify a port for the gin server")
+	service := flag.String("s", "reveal", "Mode should be 'rest' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: server -e {mode}")
@@ -41,7 +42,7 @@ func main() {
 	flag.Parse()
 	config.Init(*environment)
 
-	log.Println(fmt.Sprintf("Starting TruSet Revealer API server in %v mode...", *environment))
+	log.Printf("Starting TruSet Revealer %v service in %v mode...", *service, *environment)
 	env := config.GetConfig()
 	// Try IPC, if configured
 	clientString = env.GetString("ethereumIpc")
@@ -54,7 +55,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client %v: %v", clientString, err)
 	}
-	defer log.Println("Shutting down TruSet Revealer API server...")
+	defer log.Printf("Shutting down TruSet Revealer %v service", *service)
 
 	// Open a database connection, and close it when we are terminated
 	postgresUri := env.GetString("postgresUri")
@@ -80,9 +81,19 @@ func main() {
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
 	events.Init(clientString, commitRevealVotingContractAddress)
 	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
-	events.ProcessPastEvents()
 
-	events.ProcessFutureEvents()
+	switch *service {
+	case "reveal":
+		// poll for contract events that result in reveals
+		events.ProcessPastEvents()
+		events.ProcessFutureEvents()
+	case "api":
+		// Run a REST server to serve TruSet API requests
+		r := SetupRouter()
+		r.Run(":" + *port) // listen and serve on 0.0.0.0:8080 by default
+	default:
+		log.Fatal("-s option is not one of the supported service types - should be 'reveal' or 'api'")
+	}
 }
 
 func SetupDB(postgresUri string) *gorm.DB {
