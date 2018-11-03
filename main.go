@@ -32,7 +32,6 @@ func main() {
 	var err error
 
 	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
-	port := os.Getenv("PORT")
 	service := flag.String("s", "reveal", "Mode should be 'rest' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
 
 	flag.Usage = func() {
@@ -85,7 +84,7 @@ func main() {
 		events.ProcessPastEvents()
 		events.ProcessFutureEvents()
 	case "api":
-		// Run a REST server to serve TruSet API requests
+		port := os.Getenv("PORT")
 		// Run a REST server to serve TruSet API requests
 		r := SetupRouter()
 		r.Run(":" + port) // listen and serve on 0.0.0.0:8080 by default

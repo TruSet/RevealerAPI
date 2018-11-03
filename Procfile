@@ -1,2 +1,2 @@
-web: RevealerAPI -e heroku -p $PORT -s api
-worker: RevealerAPI -e heroku -p $PORT --poll -s reveal
+web: RevealerAPI -e heroku -s api
+worker: RevealerAPI -e heroku --poll -s reveal
