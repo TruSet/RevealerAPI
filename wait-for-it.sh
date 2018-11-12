@@ -25,23 +25,23 @@ USAGE
 wait_for()
 {
     if [[ $TIMEOUT -gt 0 ]]; then
-        echoerr "$cmdname: waiting $TIMEOUT seconds for $HOST:$PORT"
+        echoerr "$cmdname: waiting $TIMEOUT seconds for $HOST:$WPORT"
     else
-        echoerr "$cmdname: waiting for $HOST:$PORT without a timeout"
+        echoerr "$cmdname: waiting for $HOST:$WPORT without a timeout"
     fi
     start_ts=$(date +%s)
     while :
     do
         if [[ $ISBUSY -eq 1 ]]; then
-            nc -z $HOST $PORT
+            nc -z $HOST $WPORT
             result=$?
         else
-            (echo > /dev/tcp/$HOST/$PORT) >/dev/null 2>&1
+            (echo > /dev/tcp/$HOST/$WPORT) >/dev/null 2>&1
             result=$?
         fi
         if [[ $result -eq 0 ]]; then
             end_ts=$(date +%s)
-            echoerr "$cmdname: $HOST:$PORT is available after $((end_ts - start_ts)) seconds"
+            echoerr "$cmdname: $HOST:$WPORT is available after $((end_ts - start_ts)) seconds"
             break
         fi
         sleep 1
@@ -53,16 +53,16 @@ wait_for_wrapper()
 {
     # In order to support SIGINT during timeout: http://unix.stackexchange.com/a/57692
     if [[ $QUIET -eq 1 ]]; then
-        timeout $BUSYTIMEFLAG $TIMEOUT $0 --quiet --child --host=$HOST --port=$PORT --timeout=$TIMEOUT &
+        timeout $BUSYTIMEFLAG $TIMEOUT $0 --quiet --child --host=$HOST --port=$WPORT --timeout=$TIMEOUT &
     else
-        timeout $BUSYTIMEFLAG $TIMEOUT $0 --child --host=$HOST --port=$PORT --timeout=$TIMEOUT &
+        timeout $BUSYTIMEFLAG $TIMEOUT $0 --child --host=$HOST --port=$WPORT --timeout=$TIMEOUT &
     fi
     PID=$!
     trap "kill -INT -$PID" INT
     wait $PID
     RESULT=$?
     if [[ $RESULT -ne 0 ]]; then
-        echoerr "$cmdname: timeout occurred after waiting $TIMEOUT seconds for $HOST:$PORT"
+        echoerr "$cmdname: timeout occurred after waiting $TIMEOUT seconds for $HOST:$WPORT"
     fi
     return $RESULT
 }
@@ -74,7 +74,7 @@ do
         *:* )
         hostport=(${1//:/ })
         HOST=${hostport[0]}
-        PORT=${hostport[1]}
+        WPORT=${hostport[1]}
         shift 1
         ;;
         --child)
@@ -99,12 +99,12 @@ do
         shift 1
         ;;
         -p)
-        PORT="$2"
-        if [[ $PORT == "" ]]; then break; fi
+        WPORT="$2"
+        if [[ $WPORT == "" ]]; then break; fi
         shift 2
         ;;
         --port=*)
-        PORT="${1#*=}"
+        WPORT="${1#*=}"
         shift 1
         ;;
         -t)
@@ -131,7 +131,7 @@ do
     esac
 done
 
-if [[ "$HOST" == "" || "$PORT" == "" ]]; then
+if [[ "$HOST" == "" || "$WPORT" == "" ]]; then
     echoerr "Error: you need to provide a host and port to test."
     usage
 fi
