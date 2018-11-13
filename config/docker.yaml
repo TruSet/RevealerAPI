@@ -1,7 +1,7 @@
 {
   postgresUri: "postgresql://postgres:postgres@postgres/postgres?sslmode=disable",
-  ethereumRpc: "http://geth:8565",
+  ethereumRpc: "http://ethereum-node:8565",
   ethereumIpc: "/tmp/geth.ipc",
-  ethereumWs: "http://geth:8566",
-  commitRevealVotingContractAddress: "0x93ff56bafdf682a494bce12e7067f42202943970"
+  ethereumWs: "http://ethereum-node:8566",
+  commitRevealVotingContractAddress: "0x98ddc5698eb92c752b85af297016c13bd5151f61"
 }

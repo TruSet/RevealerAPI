@@ -47,8 +47,8 @@ func main() {
 	clientString = env.GetString("ethereumIpc")
 
 	if clientString == "" {
-		log.Println("Using websockets...")
-		clientString = env.GetString("ethereumWs")
+		log.Println("Using client string from environment...")
+		clientString = os.Getenv("CLIENT_STRING")
 	}
 
 	if err != nil {
@@ -59,21 +59,19 @@ func main() {
 	// Open a database connection, and close it when we are terminated
 	postgresUri := env.GetString("postgresUri")
 	if postgresUri == "" {
+		log.Println("Using postgresUri from environment...")
 		postgresUri = os.Getenv("DATABASE_URL")
 	}
 	db := SetupDB(postgresUri)
 	defer db.Close()
 	database.InitDb(db)
 
-	// Uncomment to create some test data
-	//database.SetupTestData()
-
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
-	events.Init(clientString, commitRevealVotingContractAddress)
-	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
 
 	switch *service {
 	case "reveal":
+		events.Init(clientString, commitRevealVotingContractAddress)
+		log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
 		// Read data from all past events and reveal any we have not already revealed.
 		// This allows us to catch up automatically on lost logs whenever we restart.
 		// (If we never restart there's no extra work to do. But if we do, this is safer than ignoring the gap.)
