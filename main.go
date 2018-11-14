@@ -29,7 +29,6 @@ func init() {
 func main() {
 
 	var clientString string
-	var err error
 
 	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
 	service := flag.String("s", "reveal", "Mode should be 'rest' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
