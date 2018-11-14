@@ -204,13 +204,17 @@ func processRevealResult(ctx context.Context, client *ethclient.Client, tx *type
 func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
 	commitments := fetchCommitments(revealPeriodStarted.PollID)
 	ignoreThisPoll := len(commitments) == 0
-	log.Println("Ignore due to length?", ignoreThisPoll)
+	if ignoreThisPoll {
+		log.Println("Ignoring poll with no commitments")
+	}
 
 	// We don't bother checking the poll status for real-time events
 	if !ignoreThisPoll && processingPastEvents {
 		pollEnded, err := contractCallSession.PollEnded(revealPeriodStarted.PollID)
 		ignoreThisPoll = (err == nil) && pollEnded
-		log.Println("Ignore due to poll status?", ignoreThisPoll)
+		if pollEnded {
+			log.Println("Ignoring poll due to poll status")
+		}
 	}
 
 	if !ignoreThisPoll {
