@@ -31,7 +31,7 @@ func main() {
 	var clientString string
 
 	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
-	service := flag.String("s", "reveal", "Mode should be 'rest' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
+	service := flag.String("s", "reveal", "Mode should be 'api' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: server -e {mode}")
