@@ -50,9 +50,6 @@ func main() {
 		clientString = os.Getenv("CLIENT_STRING")
 	}
 
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client %v: %v", clientString, err)
-	}
 	defer log.Printf("Shutting down TruSet Revealer %v service", *service)
 
 	// Open a database connection, and close it when we are terminated
