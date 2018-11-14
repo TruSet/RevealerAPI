@@ -8,9 +8,9 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
-	"github.com/TruSet/RevealerAPI/config"
 	"github.com/TruSet/RevealerAPI/database"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gin-gonic/gin"
@@ -23,9 +23,7 @@ var db *gorm.DB
 var router *gin.Engine
 
 func setupTest() {
-	config.Init("circleci")
-	env := config.GetConfig()
-	var postgresUri = env.GetString("postgresUri")
+	var postgresUri = os.Getenv("DATABASE_URL")
 
 	router = SetupRouter()
 	db = SetupDB(postgresUri)
