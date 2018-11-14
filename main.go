@@ -28,11 +28,10 @@ func init() {
 
 func main() {
 
-	var clientString string
-	var err error
-
 	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
 	service := flag.String("s", "reveal", "Mode should be 'rest' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
+	ethereumRpc := flag.String("rpc", os.Getenv("ETHEREUM_RPC"), "Specify the rpc endpoint of your ethereum client (defaults to ETHEREUM_RPC env var)")
+	postgresUri := flag.String("db", os.Getenv("DATABASE_URL"), "Specify the postgres database endpoint (defaults to DATABASE_URL env var)")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: server -e {mode}")
@@ -43,25 +42,19 @@ func main() {
 
 	log.Printf("Starting TruSet Revealer %v service in %v mode...", *service, *environment)
 	env := config.GetConfig()
-	// Try IPC, if configured
-	clientString = env.GetString("ethereumIpc")
 
-	if clientString == "" {
-		log.Println("Using websockets...")
-		clientString = env.GetString("ethereumWs")
+	// ethereum rpc path - ipc, websockets
+	if *ethereumRpc == "" {
+		log.Fatal("No -rpc flag or ETHEREUM_RPC specified (wss://..., *.ipc)")
 	}
 
-	if err != nil {
-		log.Fatalf("Failed to connect to the Ethereum client %v: %v", clientString, err)
-	}
 	defer log.Printf("Shutting down TruSet Revealer %v service", *service)
 
 	// Open a database connection, and close it when we are terminated
-	postgresUri := env.GetString("postgresUri")
-	if postgresUri == "" {
-		postgresUri = os.Getenv("DATABASE_URL")
+	if *postgresUri == "" {
+		log.Fatal("No -db flag or DATABASE_URL specified (postgresql://...)")
 	}
-	db := SetupDB(postgresUri)
+	db := SetupDB(*postgresUri)
 	defer db.Close()
 	database.InitDb(db)
 
@@ -69,7 +62,7 @@ func main() {
 	//database.SetupTestData()
 
 	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
-	events.Init(clientString, commitRevealVotingContractAddress)
+	events.Init(*ethereumRpc, commitRevealVotingContractAddress)
 	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
 
 	switch *service {
