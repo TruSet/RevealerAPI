@@ -1,4 +1,4 @@
-FROM golang:1.9
+FROM golang:1.10
 MAINTAINER Greg Taschuk
 WORKDIR /go/src/github.com/TruSet/RevealerAPI
 
