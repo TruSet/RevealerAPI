@@ -10,4 +10,4 @@ COPY Gopkg.toml Gopkg.lock ./
 RUN dep ensure --vendor-only
 COPY . .
 
-CMD "go run main.go -e docker"
+CMD "go run main.go"

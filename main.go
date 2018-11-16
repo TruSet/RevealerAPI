@@ -12,7 +12,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/lib/pq"
 
-	"github.com/TruSet/RevealerAPI/config"
 	"github.com/TruSet/RevealerAPI/database"
 	"github.com/TruSet/RevealerAPI/events"
 )
@@ -27,21 +26,18 @@ func init() {
 }
 
 func main() {
-
-	environment := flag.String("e", "development", "Specify an environment {development, docker, infura}")
-	service := flag.String("s", "reveal", "Mode should be 'rest' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
+	service := flag.String("s", "reveal", "Mode should be 'api' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
 	ethereumRpc := flag.String("rpc", os.Getenv("ETHEREUM_RPC"), "Specify the rpc endpoint of your ethereum client (defaults to ETHEREUM_RPC env var)")
 	postgresUri := flag.String("db", os.Getenv("DATABASE_URL"), "Specify the postgres database endpoint (defaults to DATABASE_URL env var)")
+	commitRevealVotingContractAddress := flag.String("crv", os.Getenv("CRV_ADDRESS"), "Specify the address of the revealer api (defaults to CRV_ADDRESS env var)")
 
 	flag.Usage = func() {
 		fmt.Println("Usage: server -e {mode}")
 		os.Exit(1)
 	}
 	flag.Parse()
-	config.Init(*environment)
 
-	log.Printf("Starting TruSet Revealer %v service in %v mode...", *service, *environment)
-	env := config.GetConfig()
+	log.Printf("Starting TruSet Revealer %v service...", *service)
 
 	// ethereum rpc path - ipc, websockets
 	if *ethereumRpc == "" {
@@ -61,9 +57,8 @@ func main() {
 	// Uncomment to create some test data
 	//database.SetupTestData()
 
-	commitRevealVotingContractAddress := env.GetString("commitRevealVotingContractAddress")
-	events.Init(*ethereumRpc, commitRevealVotingContractAddress)
-	log.Printf("Listening to CRV contract at %v", commitRevealVotingContractAddress)
+	events.Init(*ethereumRpc, *commitRevealVotingContractAddress)
+	log.Printf("Listening to CRV contract at %v", *commitRevealVotingContractAddress)
 
 	switch *service {
 	case "reveal":

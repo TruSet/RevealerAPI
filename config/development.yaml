@@ -1,5 +1,0 @@
-{
-  postgresUri: "postgresql://postgres:postgres@localhost/postgres?sslmode=disable",
-  ethereumWs: "ws://localhost:8565",
-  commitRevealVotingContractAddress: "0x647bdfb1e72d44e097beefc56a6fb49c3432f30d",
-}

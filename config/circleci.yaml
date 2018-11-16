@@ -1,3 +1,0 @@
-{
-  postgresUri: "postgresql://ci-postgres@localhost:5432/circle-test?sslmode=disable",
-}
