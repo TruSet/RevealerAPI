@@ -1,2 +1,2 @@
-web: RevealerAPI -e heroku -s api
-worker: RevealerAPI -e heroku --poll -s reveal
+web: RevealerAPI -s api
+worker: RevealerAPI --poll -s reveal
