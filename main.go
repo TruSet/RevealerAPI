@@ -33,6 +33,7 @@ func main() {
 
 	flag.Usage = func() {
 		fmt.Println("Usage: server -e {mode}")
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 	flag.Parse()
