@@ -20,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 
+	"github.com/getsentry/raven-go"
 	"github.com/miguelmota/go-solidity-sha3"
 )
 
@@ -237,6 +238,7 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
 		)
 
 		if err != nil {
+			raven.CaptureError(err, nil)
 			log.Printf("[Reveal-All Submission FAILED] %v", err)
 			retryRevealsIndividually = true
 		} else {
@@ -258,6 +260,7 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
 					big.NewInt(int64(commitment.Salt)),
 				)
 				if err != nil {
+					raven.CaptureError(err, nil)
 					log.Printf("[Reveal Submission FAILED] %+v %v", commitment, err)
 				} else {
 					// TODO: here and elsewhere we want to use a cancellable context
