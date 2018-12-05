@@ -100,3 +100,10 @@ workflows:
           filters:
             branches:
               only: master
+      - deploy-beta:
+          requires:
+            - build
+            - test
+          filters:
+            branches:
+              only: master
