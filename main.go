@@ -70,7 +70,8 @@ func main() {
 		// logs that have been processed successfully.
 
 		// poll for contract events that result in reveals
-		events.ProcessPastEvents()
+		var systemCreatedAtBlock uint64 = 3456213 // TODO: get from env var?
+		events.ProcessPastEvents(systemCreatedAtBlock)
 		events.ProcessFutureEvents()
 	case "api":
 		port := os.Getenv("PORT")

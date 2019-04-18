@@ -10,13 +10,11 @@ import (
 	"time"
 
 	"github.com/TruSet/RevealerAPI/contract"
-	"github.com/TruSet/RevealerAPI/database"
 
 	ethereum "github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -27,6 +25,7 @@ import (
 var (
 	commitRevealVotingContractAddress common.Address
 	filter                            ethereum.FilterQuery
+	topics                            [][]common.Hash
 	votingSession                     *contract.TruSetCommitRevealVotingSession
 	contractCallSession               *contract.TruSetCommitRevealVotingCallerSession
 	boundContract                     *bind.BoundContract
@@ -75,20 +74,14 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 	dialClient(clientString)
 	processingPastEvents = false
 
-	filter = ethereum.FilterQuery{
-		Addresses: []common.Address{commitRevealVotingContractAddress},
-		FromBlock: big.NewInt(0),
-		ToBlock:   nil, // Latest block
-		//Topics:    nil, // Match any topic, for testing
-    Topics: [][]common.Hash{{
-      VoteCommittedLogTopic,
-      VoteRevealedLogTopic,
-      CommitPeriodHaltedLogTopic,
-      VoteRevealedLogTopic,
-      RevealPeriodHaltedLogTopic,
-      PollCreatedLogTopic,
-      RevealPeriodStartedLogTopic}},
-	}
+	topics = [][]common.Hash{{
+		VoteCommittedLogTopic,
+		VoteRevealedLogTopic,
+		CommitPeriodHaltedLogTopic,
+		VoteRevealedLogTopic,
+		RevealPeriodHaltedLogTopic,
+		PollCreatedLogTopic,
+		RevealPeriodStartedLogTopic}}
 
 	votingContract, _ := contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, client)
 	opts := revealTransactionOpts(client)
@@ -110,187 +103,78 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 	}
 }
 
-func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
-	if l.Removed {
-		// There has been a chain re-org but we don't really care
-		// We will re-process this log if/when we see it included in the chain again
-		return
-	}
-
-	switch l.Topics[0] {
-	case RevealPeriodStartedLogTopic:
-		revealPeriodStarted := new(contract.TruSetCommitRevealVotingRevealPeriodStarted)
-		// shouldn't have to use this low level boundContract
-		boundContract.UnpackLog(revealPeriodStarted, "RevealPeriodStarted", l)
-
-		log.Printf("[Reveal Period Started]\t%s: %s / %s / %s",
-			hexutil.Encode(revealPeriodStarted.PollID[:]),
-			revealPeriodStarted.InstrumentAddress.String(),
-			hexutil.Encode(revealPeriodStarted.DataIdentifier[:]),
-			hexutil.Encode(revealPeriodStarted.PayloadHash[:]))
-
-		RevealCommitments(client, revealPeriodStarted)
-	case CommitPeriodHaltedLogTopic:
-		commitPeriodHalted := new(contract.TruSetCommitRevealVotingCommitPeriodHalted)
-		boundContract.UnpackLog(commitPeriodHalted, "CommitPeriodHalted", l)
-
-		log.Printf("[Commit Period Halted]\t%s", hexutil.Encode(commitPeriodHalted.PollID[:]))
-	case RevealPeriodHaltedLogTopic:
-		revealPeriodHalted := new(contract.TruSetCommitRevealVotingRevealPeriodHalted)
-		boundContract.UnpackLog(revealPeriodHalted, "RevealPeriodHalted", l)
-
-		log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
-	case PollCreatedLogTopic:
-		pollCreated := new(contract.TruSetCommitRevealVotingPollCreated)
-		boundContract.UnpackLog(pollCreated, "PollCreated", l)
-
-		log.Printf("[Poll Created]\t%s", hexutil.Encode(pollCreated.PollID[:]))
-	case RevealPeriodHaltedLogTopic:
-		revealPeriodHalted := new(contract.TruSetCommitRevealVotingRevealPeriodHalted)
-		boundContract.UnpackLog(revealPeriodHalted, "RevealPeriodHalted", l)
-
-		log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
-	case VoteCommittedLogTopic:
-		voteCommitted := new(contract.TruSetCommitRevealVotingVoteCommitted)
-		boundContract.UnpackLog(voteCommitted, "VoteCommitted", l)
-
-		if knownCommitment(voteCommitted.PollID, voteCommitted.SecretHash) {
-			log.Printf("[Vote Committed] (recognised): %s : %s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex(), hexutil.Encode(voteCommitted.SecretHash[:]))
-		} else {
-			log.Printf("[Vote Committed] UNRECOGNISED: %s : %s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex(), hexutil.Encode(voteCommitted.SecretHash[:]))
-		}
-
-	case VoteRevealedLogTopic:
-		voteRevealed := new(contract.TruSetCommitRevealVotingVoteRevealed)
-		boundContract.UnpackLog(voteRevealed, "VoteRevealed", l)
-
-		log.Printf("[Vote Revealed]\t%s : %s : %d", hexutil.Encode(voteRevealed.PollID[:]), voteRevealed.Voter.Hex(), voteRevealed.Choice)
-	default:
-		log.Printf("[Unexpected]\tlog with topics %x\n", l.Topics)
-		log.Println(l.Topics[0])
+func getCRVLogFilter() ethereum.FilterQuery {
+	return ethereum.FilterQuery{
+		Addresses: []common.Address{commitRevealVotingContractAddress},
+		FromBlock: big.NewInt(0),
+		ToBlock:   nil, // Latest block
+		//Topics:    nil, // Match any topic, for testing
+		Topics: topics,
 	}
 }
 
-func fetchCommitments(pollID [32]byte) []database.Commitment {
-	var commitments []database.Commitment
-	database.Db.Where("poll_id = ?", hexutil.Encode(pollID[:])).Find(&commitments)
-	return commitments
-}
-
-func knownCommitment(pollID [32]byte, commitHash [32]byte) bool {
-	var commitments []database.Commitment
-	database.Db.Unscoped().Where("poll_id = ? and commit_hash = ?", hexutil.Encode(pollID[:]), hexutil.Encode(commitHash[:])).Find(&commitments)
-	return len(commitments) > 0
-}
-
-func processRevealResult(ctx context.Context, client *ethclient.Client, tx *types.Transaction, pollID [32]byte, voterAddress string) {
-	var description string
-	receipt, err := bind.WaitMined(ctx, client, tx)
-
-	if voterAddress == "" {
-		description = "Reveal-All Trx"
-	} else {
-		description = "Reveal Trx for " + voterAddress
-	}
-
-	if err != nil || receipt.Status == 0 {
-		log.Printf("[%v FAILED] %v %+v", description, err, receipt)
-	} else {
-		// Mark the revealed proposals as revealed
-		log.Printf("[%v Successful]", description)
-		database.SoftDeleteRevealed(pollID, voterAddress)
-	}
-}
-
-func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.TruSetCommitRevealVotingRevealPeriodStarted) {
-	commitments := fetchCommitments(revealPeriodStarted.PollID)
-	ignoreThisPoll := len(commitments) == 0
-	log.Println("Ignore due to length?", ignoreThisPoll)
-
-	// We don't bother checking the poll status for real-time events
-	if !ignoreThisPoll && processingPastEvents {
-		pollEnded, err := contractCallSession.PollEnded(revealPeriodStarted.PollID)
-		ignoreThisPoll = (err == nil) && pollEnded
-		log.Println("Ignore due to poll status?", ignoreThisPoll)
-	}
-
-	if !ignoreThisPoll {
-		// There is work to do. First try revealing all votes in one transaction.
-		retryRevealsIndividually := false
-
-		var voters []common.Address
-		var voteOptions []*big.Int
-		var salts []*big.Int
-		for i := 0; i < len(commitments); i++ {
-			commitment := commitments[i]
-			voters = append(voters, common.HexToAddress(commitment.VoterAddress))
-			voteOptions = append(voteOptions, big.NewInt(int64(commitment.VoteOption)))
-			salts = append(salts, big.NewInt(int64(commitment.Salt)))
-		}
-
-		trans, err := votingSession.RevealVotes(
-			revealPeriodStarted.InstrumentAddress,
-			revealPeriodStarted.DataIdentifier,
-			revealPeriodStarted.PayloadHash,
-			voters,
-			voteOptions,
-			salts,
-		)
-
-		if err != nil {
-			raven.CaptureError(err, nil)
-			log.Printf("[Reveal-All Submission FAILED] %v", err)
-			retryRevealsIndividually = true
-		} else {
-			// TODO: here and elsewhere we want to use a cancellable context
-			//       this call will hang indefinitely until our transaction is mined or the context is cancelled
-			processRevealResult(context.Background(), client, trans, revealPeriodStarted.PollID, "")
-		}
-
-		// // If we could not reveal all votes together, fall back to revealing them individually
-		if retryRevealsIndividually {
-			for i := 0; i < len(commitments); i++ {
-				commitment := commitments[i]
-				trans, err := votingSession.RevealVote(
-					revealPeriodStarted.InstrumentAddress,
-					revealPeriodStarted.DataIdentifier,
-					revealPeriodStarted.PayloadHash,
-					common.HexToAddress(commitment.VoterAddress),
-					big.NewInt(int64(commitment.VoteOption)),
-					big.NewInt(int64(commitment.Salt)),
-				)
-				if err != nil {
-					raven.CaptureError(err, nil)
-					log.Printf("[Reveal Submission FAILED] %+v %v", commitment, err)
-				} else {
-					// TODO: here and elsewhere we want to use a cancellable context
-					//       this call will hang indefinitely until our transaction is mined or the context is cancelled
-					processRevealResult(context.Background(), client, trans, revealPeriodStarted.PollID, commitment.VoterAddress)
-				}
-			}
-		}
-	}
-}
-
-func ProcessPastEvents() {
+func ProcessPastEvents(fromBlock uint64) {
+	var startingWindowSize uint64 = 1000000 // TODO: get from env var?
+	windowSize := startingWindowSize
+	var startBlock uint64 = fromBlock
+	endBlock := startBlock + windowSize
 
 	log.Printf("Processing past events")
 	processingPastEvents = true
+
+	for startBlock <= CurrentBlockNumber() {
+		log.Printf("Processing logs for address %v, blocks %v (exclusive) to %v (inclusive)", commitRevealVotingContractAddress.String(), startBlock, endBlock)
+		err := processPastEventWindow(startBlock, endBlock)
+
+		if err != nil {
+			log.Printf("error: %v", err.Error())
+			if strings.Contains(err.Error(), "returned more than") {
+				// Retry with smaller window size, always non-empty
+				windowSize = windowSize / 4
+				if windowSize < 1 {
+					windowSize = 1
+				}
+
+				endBlock = startBlock + windowSize
+				log.Printf("Too many logs found for address %v; adjusting window size to %v and retrying", commitRevealVotingContractAddress.String(), windowSize)
+			} else {
+				// Unexpected error
+				raven.CaptureError(err, nil)
+				log.Fatalf("Failed to get past logs for address %v. Error: %v", commitRevealVotingContractAddress.String(), err)
+			}
+		} else {
+			// Success; move and enlarge the window
+			windowSize = windowSize * 2
+			startBlock = endBlock
+			endBlock = startBlock + windowSize
+		}
+	}
+	processingPastEvents = false
+}
+
+func processPastEventWindow(fromBlock uint64, toBlock uint64) error {
 	ctx := context.Background()
+
+	filter := getCRVLogFilter()
+	filter.FromBlock = big.NewInt(int64(fromBlock))
+	filter.ToBlock = big.NewInt(int64(toBlock))
+
+	if toBlock > CurrentBlockNumber() {
+		filter.ToBlock = nil
+	}
 
 	// get past logs
 	logs, err := client.FilterLogs(context.Background(), filter)
 	if err != nil {
-		log.Fatalf("Failed to get past logs. Error: %v", err)
-		return
+		return err
 	}
 
 	for _, l := range logs {
 		processLog(client, ctx, l)
 	}
 
-	processingPastEvents = false
 	log.Println("End of existing logs")
+	return nil
 }
 
 // Uncomment if mocking websockets connection errors
@@ -301,6 +185,7 @@ func ProcessPastEvents() {
 
 func ProcessFutureEvents() {
 	ctx := context.Background()
+	filter := getCRVLogFilter()
 
 	// TODO:
 	// Infura closes idle websockets connections. We could keep the websockets
