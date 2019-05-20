@@ -1,4 +1,25 @@
-version: 2
+version: 2.1
+commands:
+  deploy-heroku:
+    parameters:
+      heroku_app_name:
+        type: string
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "18:55:22:87:b8:b2:2e:d1:4d:2f:fd:48:bd:17:49:40"
+      - run:
+          name: Run Heroku setup script
+          command: bash .circleci/setup-heroku.sh
+      - run:
+          name: deploy branch
+          command: |
+            heroku git:remote -a << parameters.heroku_app_name >>
+            git config user.email "circleci@truset.com"
+            git config user.name "circleci bot"
+            git fetch heroku
+            git push --force git@heroku.com:<< parameters.heroku_app_name >>.git HEAD:refs/heads/master
 jobs:
   build:
     docker:
@@ -43,48 +64,36 @@ jobs:
           name: Wait for db
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: go test
-  deploy-staging:
+  deploy-tokens-staging:
     machine:
       enabled: true
-    environment:
-      HEROKU_APP: truset-revealer-tokens-staging
     steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "18:55:22:87:b8:b2:2e:d1:4d:2f:fd:48:bd:17:49:40"
-      - run:
-          name: Run Heroku setup script
-          command: bash .circleci/setup-heroku.sh
-      - run:
-          name: deploy sections branch to heroku
-          command: |
-            heroku git:remote -a $HEROKU_APP
-            git config user.email "circleci@truset.com"
-            git config user.name "circleci bot"
-            git fetch heroku
-            git push --force git@heroku.com:$HEROKU_APP.git HEAD:refs/heads/master
-  deploy-beta:
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-tokens-staging"
+  deploy-bonds-demo:
     machine:
       enabled: true
-    environment:
-      HEROKU_APP: truset-revealer-tokens-beta
     steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "18:55:22:87:b8:b2:2e:d1:4d:2f:fd:48:bd:17:49:40"
-      - run:
-          name: Run Heroku setup script
-          command: bash .circleci/setup-heroku.sh
-      - run:
-          name: deploy sections branch to heroku
-          command: |
-            heroku git:remote -a $HEROKU_APP
-            git config user.email "circleci@truset.com"
-            git config user.name "circleci bot"
-            git fetch heroku
-            git push --force git@heroku.com:$HEROKU_APP.git HEAD:refs/heads/master
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-bonds-demo"
+  deploy-tegula-demo:
+    machine:
+      enabled: true
+    steps:
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-tegula-demo"
+  deploy-tokens-beta:
+    machine:
+      enabled: true
+    steps:
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-tokens-beta"
+  deploy-realesta-beta:
+    machine:
+      enabled: true
+    steps:
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-realesta-beta"
 workflows:
   version: 2
   build_and_test:
@@ -93,16 +102,38 @@ workflows:
       - test:
           requires:
             - build
-      - deploy-staging:
+      - deploy-tokens-staging:
           requires:
-            - build
             - test
           filters:
             branches:
               only: master
-      - deploy-beta:
+      - deploy-tokens-beta:
           requires:
-            - build
+            - test
+          filters:
+            branches:
+              only: master
+      #- deploy-bonds-demo:
+          #requires:
+            #- test
+          #filters:
+            #branches:
+              #only: master
+      - deploy-tegula-demo:
+          requires:
+            - test
+          filters:
+            branches:
+              only: tegula
+      - deploy-tokens-beta:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-realesta-beta:
+          requires:
             - test
           filters:
             branches:
