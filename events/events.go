@@ -17,6 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/params"
 
 	"github.com/getsentry/raven-go"
 	"github.com/miguelmota/go-solidity-sha3"
@@ -53,6 +54,7 @@ func revealTransactionOpts(client *ethclient.Client) *bind.TransactOpts {
 	if err != nil {
 		log.Fatal(err)
 	}
+	auth.GasPrice = new(big.Int).Mul(big.NewInt(2), big.NewInt(params.GWei))
 	return auth
 }
 
