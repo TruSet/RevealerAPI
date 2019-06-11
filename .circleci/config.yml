@@ -70,12 +70,12 @@ jobs:
     steps:
       - deploy-heroku:
           heroku_app_name: "truset-revealer-tokens-staging"
-  deploy-bonds-demo:
+  deploy-bond-demo:
     machine:
       enabled: true
     steps:
       - deploy-heroku:
-          heroku_app_name: "truset-revealer-bonds-demo"
+          heroku_app_name: "truset-revealer-bond-demo"
   deploy-tegula-demo:
     machine:
       enabled: true
@@ -114,12 +114,12 @@ workflows:
           filters:
             branches:
               only: master
-      #- deploy-bonds-demo:
-          #requires:
-            #- test
-          #filters:
-            #branches:
-              #only: master
+      - deploy-bond-demo:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
       - deploy-tegula-demo:
           requires:
             - test
