@@ -49,6 +49,13 @@ func StoreCommitment(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "vote will be revealed when voting closes"})
 }
 
+func MarkAsMostRecentlySeen(pollID [32]byte, voterAddress string, commitHash [32]byte) {
+	// Mark all commitments for this user as "not the most recent one", then mark this commit hash as the most recent one
+	var c Commitment
+	Db.Model(&c).Where("poll_id = ? and voter_address = ?", pollID, voterAddress).Update("last_on_chain", false)
+	Db.Model(&c).Where("poll_id = ? and voter_address = ? and commit_hash = ", pollID, voterAddress, commitHash).Update("last_on_chain", true)
+}
+
 func SoftDeleteRevealed(pollID [32]byte, voterAddress string) {
 	// We make use of gorm's "soft delete"
 	// Records are not really deleted, but flagged as such and ignored in queries

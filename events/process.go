@@ -40,27 +40,23 @@ func processLog(client *ethclient.Client, ctx context.Context, l types.Log) {
 		boundContract.UnpackLog(commitPeriodHalted, "CommitPeriodHalted", l)
 
 		log.Printf("[Commit Period Halted]\t%s", hexutil.Encode(commitPeriodHalted.PollID[:]))
-	case RevealPeriodHaltedLogTopic:
-		revealPeriodHalted := new(contract.TruSetCommitRevealVotingRevealPeriodHalted)
-		boundContract.UnpackLog(revealPeriodHalted, "RevealPeriodHalted", l)
-
-		log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
 	case PollCreatedLogTopic:
 		pollCreated := new(contract.TruSetCommitRevealVotingPollCreated)
 		boundContract.UnpackLog(pollCreated, "PollCreated", l)
 
-		log.Printf("[Poll Created]\t%s", hexutil.Encode(pollCreated.PollID[:]))
+		//log.Printf("[Poll Created]\t%s", hexutil.Encode(pollCreated.PollID[:]))
 	case RevealPeriodHaltedLogTopic:
 		revealPeriodHalted := new(contract.TruSetCommitRevealVotingRevealPeriodHalted)
 		boundContract.UnpackLog(revealPeriodHalted, "RevealPeriodHalted", l)
 
-		log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
+		//log.Printf("[Reveal Period Halted]\t%s", hexutil.Encode(revealPeriodHalted.PollID[:]))
 	case VoteCommittedLogTopic:
 		voteCommitted := new(contract.TruSetCommitRevealVotingVoteCommitted)
 		boundContract.UnpackLog(voteCommitted, "VoteCommitted", l)
 
 		if knownCommitment(voteCommitted.PollID, voteCommitted.SecretHash) {
 			log.Printf("[Vote Committed] (recognised): %s : %s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex(), hexutil.Encode(voteCommitted.SecretHash[:]))
+			database.MarkAsMostRecentlySeen(voteCommitted.PollID, voteCommitted.Voter.Hex(), voteCommitted.SecretHash)
 		} else {
 			log.Printf("[Vote Committed] UNRECOGNISED: %s : %s : %s", hexutil.Encode(voteCommitted.PollID[:]), voteCommitted.Voter.Hex(), hexutil.Encode(voteCommitted.SecretHash[:]))
 		}
@@ -148,7 +144,7 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
 
 func fetchCommitments(pollID [32]byte) []database.Commitment {
 	var commitments []database.Commitment
-	database.Db.Where("poll_id = ?", hexutil.Encode(pollID[:])).Find(&commitments)
+	database.Db.Where("poll_id = ? and last_on_chain = ?", hexutil.Encode(pollID[:]), true).Find(&commitments)
 	return commitments
 }
 

@@ -16,6 +16,7 @@ type Commitment struct {
 	VoteOption   uint8
 	Salt         uint64
 	DeletedAt    *time.Time
+	LastOnChain  bool
 }
 
 func InitDb(new_db *gorm.DB) {

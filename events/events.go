@@ -3,6 +3,7 @@ package events
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -234,6 +235,8 @@ func ProcessFutureEvents() {
 			// 	break pollingLoop
 			case err := <-errChan:
 				log.Println("Logs subscription error", err)
+				msg := fmt.Sprintf("Subscription terminated with error")
+				raven.CaptureError(err, map[string]string{"message": msg, "startedAt": subscriptionTime.String()})
 				break pollingLoop
 			case l := <-ch:
 				processLog(client, ctx, l)
