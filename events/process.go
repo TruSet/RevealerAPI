@@ -114,7 +114,7 @@ func RevealCommitments(client *ethclient.Client, revealPeriodStarted *contract.T
 		} else {
 			// TODO: here and elsewhere we want to use a cancellable context
 			//       this call will hang indefinitely until our transaction is mined or the context is cancelled
-			processRevealResult(context.Background(), client, trans, revealPeriodStarted.PollID, "")
+			retryRevealsIndividually = processRevealResult(context.Background(), client, trans, revealPeriodStarted.PollID, "")
 		}
 
 		// // If we could not reveal all votes together, fall back to revealing them individually
@@ -154,7 +154,8 @@ func knownCommitment(pollID [32]byte, commitHash [32]byte) bool {
 	return len(commitments) > 0
 }
 
-func processRevealResult(ctx context.Context, client *ethclient.Client, tx *types.Transaction, pollID [32]byte, voterAddress string) {
+// Returns whether or not this submission needs to be retried
+func processRevealResult(ctx context.Context, client *ethclient.Client, tx *types.Transaction, pollID [32]byte, voterAddress string) bool {
 	var description string
 	receipt, err := bind.WaitMined(ctx, client, tx)
 
@@ -166,9 +167,11 @@ func processRevealResult(ctx context.Context, client *ethclient.Client, tx *type
 
 	if err != nil || receipt.Status == 0 {
 		log.Printf("[%v FAILED] %v %+v", description, err, receipt)
+		return true
 	} else {
 		// Mark the revealed proposals as revealed
 		log.Printf("[%v Successful]", description)
 		database.SoftDeleteRevealed(pollID, voterAddress)
+		return false
 	}
 }
