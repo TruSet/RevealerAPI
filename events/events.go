@@ -3,10 +3,12 @@ package events
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"log"
 	"math/big"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +20,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/params"
 
 	"github.com/getsentry/raven-go"
 	"github.com/miguelmota/go-solidity-sha3"
@@ -47,13 +50,44 @@ var RevealPeriodStartedLogTopic = getLogTopic("RevealPeriodStarted(bytes32,addre
 var RevealPeriodHaltedLogTopic = getLogTopic("RevealPeriodHalted(bytes32,address,uint256)")
 var PollCreatedLogTopic = getLogTopic("PollCreated(bytes32,address,uint256,uint256)")
 
+var ErrEnvVarEmpty = errors.New("getenv: environment variable empty")
+
+func getenvInt(key string) (int, error) {
+	s := os.Getenv(key)
+	if s == "" {
+		return 0, ErrEnvVarEmpty
+	}
+	v, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return v, nil
+}
+
 func revealTransactionOpts(client *ethclient.Client) *bind.TransactOpts {
 	key := os.Getenv("REVEALER_KEY")
 	passphrase := os.Getenv("REVEALER_PASSPHRASE")
+
 	auth, err := bind.NewTransactor(strings.NewReader(key), passphrase)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error reading private key: ", err)
 	}
+
+	// In some environments, estimating gas is a problem so we allow it to be hardcoded
+	// Defaults to zero, which tells go-ethereum to estimate it
+	gasLimit, _ := getenvInt("GAS_LIMIT")
+	auth.GasLimit = (uint64)(gasLimit)
+
+	gasPriceInGwei, err := getenvInt("GAS_PRICE_IN_GWEI")
+	if err != nil {
+		// Use a gas price oracle
+		auth.GasPrice = nil
+	} else {
+		auth.GasPrice = new(big.Int).Mul(big.NewInt((int64)(gasPriceInGwei)), big.NewInt(params.GWei))
+	}
+
+	log.Printf("Using gas limit %v and gas price %v", auth.GasLimit, auth.GasPrice)
+
 	return auth
 }
 

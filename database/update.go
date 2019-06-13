@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/big"
 	"net/http"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gin-gonic/gin"
@@ -52,8 +53,8 @@ func StoreCommitment(c *gin.Context) {
 func MarkAsMostRecentlySeen(pollID [32]byte, voterAddress string, commitHash [32]byte) {
 	// Mark all commitments for this user as "not the most recent one", then mark this commit hash as the most recent one
 	var c Commitment
-	Db.Model(&c).Where("poll_id = ? and voter_address = ?", pollID, voterAddress).Update("last_on_chain", false)
-	Db.Model(&c).Where("poll_id = ? and voter_address = ? and commit_hash = ", pollID, voterAddress, commitHash).Update("last_on_chain", true)
+	Db.Model(&c).Where("poll_id = ? and voter_address = ?", hexutil.Encode(pollID[:]), strings.ToLower(voterAddress)).Update("last_on_chain", false)
+	Db.Model(&c).Where("poll_id = ? and voter_address = ? and commit_hash = ?", hexutil.Encode(pollID[:]), strings.ToLower(voterAddress), hexutil.Encode(commitHash[:])).Update("last_on_chain", true)
 }
 
 func SoftDeleteRevealed(pollID [32]byte, voterAddress string) {
