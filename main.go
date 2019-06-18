@@ -63,10 +63,9 @@ func main() {
 		// (If we never restart there's no extra work to do. But if we do, this is safer than ignoring the gap.)
 		// There are more efficient ways of doing this but they are more work. We would need to track
 		// logs that have been processed successfully.
+		events.ProcessPastEvents()
 
 		// poll for contract events that result in reveals
-		var systemCreatedAtBlock uint64 = 3456213 // TODO: get from env var?
-		events.ProcessPastEvents(systemCreatedAtBlock)
 		events.ProcessFutureEvents()
 	case "api":
 		port := os.Getenv("PORT")

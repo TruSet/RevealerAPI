@@ -148,8 +148,16 @@ func getCRVLogFilter() ethereum.FilterQuery {
 	}
 }
 
-func ProcessPastEvents(fromBlock uint64) {
-	var startingWindowSize uint64 = 1000000 // TODO: get from env var?
+func ProcessPastEvents() {
+
+	fromBlock, err := strconv.ParseUint(os.Getenv("SYSTEM_START_BLOCK"), 10, 64)
+	if err != nil || fromBlock > CurrentBlockNumber() {
+		fromBlock = 0
+	}
+
+	// We could make the initial window size configurable but it's not important because it is dynamic
+	// (It's safe to have a window size that's greater than the block number)
+	var startingWindowSize uint64 = 1000000
 	windowSize := startingWindowSize
 	var startBlock uint64 = fromBlock
 	endBlock := startBlock + windowSize
