@@ -94,6 +94,12 @@ jobs:
     steps:
       - deploy-heroku:
           heroku_app_name: "truset-revealer-realesta-beta"
+  deploy-petroleu-demo:
+    machine:
+      enabled: true
+    steps:
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-petroleu-demo"
 workflows:
   version: 2
   build_and_test:
@@ -133,6 +139,12 @@ workflows:
             branches:
               only: master
       - deploy-realesta-beta:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-petroleu-demo:
           requires:
             - test
           filters:
