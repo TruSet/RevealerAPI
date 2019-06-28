@@ -100,6 +100,12 @@ jobs:
     steps:
       - deploy-heroku:
           heroku_app_name: "truset-revealer-petroleu-demo"
+  deploy-cofi-beta:
+    machine:
+      enabled: true
+    steps:
+      - deploy-heroku:
+          heroku_app_name: "truset-revealer-cofi-beta"
 workflows:
   version: 2
   build_and_test:
@@ -145,6 +151,12 @@ workflows:
             branches:
               only: master
       - deploy-petroleu-demo:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
+      - deploy-cofi-beta:
           requires:
             - test
           filters:
