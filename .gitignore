@@ -1,4 +1,0 @@
-/vendor/*
-/.vendor-new/*
-/_vendor*/**
-!/vendor/vendor.json
