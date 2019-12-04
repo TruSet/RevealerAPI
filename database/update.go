@@ -13,16 +13,32 @@ import (
 )
 
 type CommitmentBody struct {
-	PollID       string `json:"pollID"`
-	VoterAddress string `json:"voterAddress"`
-	CommitHash   string `json:"commitHash"`
-	VoteOption   int64  `json:"voteOption"`
-	Salt         int64  `json:"salt"`
+	PollID       string `json:"pollID" example:"0x12345678901234567890123456789012"`
+	VoterAddress string `json:"voterAddress" example:"0x11223344556677889900"`
+	CommitHash   string `json:"commitHash" example:"0x12345678909876543210123456789012"`
+	VoteOption   int64  `json:"voteOption" example:"1"`
+	Salt         int64  `json:"salt" example:"5866984321541876564"`
 }
 
+type Response struct {
+	Message string `json:"message" example:"vote will be revealed when voting closes"`
+}
+
+// Swagger documentation
+// @Summary Store a commitment privately, to ensure it can be revealed at a later date
+// @Description Save a vote and the matching hash commitment to that vote
+// @ID store-commitment
+// @Produce json
+// @Param payload body database.CommitmentBody true "The (about to be) committed vote details data you would like to store"
+// @Router /commitments/ [post]
+// @Success 200 {object} database.Response "Success"
+// @Failure 406 {object} database.Response "Bad payload"
 func StoreCommitment(c *gin.Context) {
 	var commitmentBody CommitmentBody
-	c.BindJSON(&commitmentBody)
+	if err := c.BindJSON(&commitmentBody); err != nil {
+		c.JSON(http.StatusInternalServerError, Response{"could not decode body: " + err.Error()})
+		return
+	}
 
 	commitHash := solsha3.SoliditySHA3(
 		solsha3.Uint256(big.NewInt(commitmentBody.VoteOption)),
@@ -31,7 +47,7 @@ func StoreCommitment(c *gin.Context) {
 
 	calculatedCommitHash := "0x" + hex.EncodeToString(commitHash)
 	if calculatedCommitHash != commitmentBody.CommitHash {
-		c.AbortWithStatus(http.StatusNotAcceptable)
+		c.JSON(http.StatusNotAcceptable, Response{"could not save commitment: hash of {" + string(commitmentBody.VoteOption) + "," + string(commitmentBody.Salt) + "} is incorrect"})
 		return
 	}
 
@@ -44,10 +60,13 @@ func StoreCommitment(c *gin.Context) {
 		VoteOption:   uint8(commitmentBody.VoteOption),
 		Salt:         uint64(commitmentBody.Salt),
 	}
-	Db.Create(&commitment)
-	//Db.Debug().Create(&commitment)
 
-	c.JSON(http.StatusCreated, gin.H{"message": "vote will be revealed when voting closes"})
+	if dbc := Db.Create(&commitment); dbc.Error != nil {
+		c.JSON(http.StatusInternalServerError, Response{"could not save commitment: " + dbc.Error.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, Response{"vote will be revealed when voting closes"})
 }
 
 func MarkAsMostRecentlySeen(pollID [32]byte, voterAddress string, commitHash [32]byte) {

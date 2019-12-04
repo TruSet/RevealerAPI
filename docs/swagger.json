@@ -1,0 +1,93 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "A REST interface for submitting votes (e.g. Accept or Reject) on proposed data records.",
+        "title": "TruSet Revealer API",
+        "termsOfService": "ToS TBD",
+        "contact": {
+            "name": "API Support",
+            "url": "https://www.truset.com/contact/",
+            "email": "greg.taschuk@consensys.net"
+        },
+        "license": {
+            "name": "License TBD",
+            "url": "TBD"
+        },
+        "version": "0.1"
+    },
+    "basePath": "/revealer/v0.1",
+    "paths": {
+        "/commitments/": {
+            "post": {
+                "description": "Save a vote and the matching hash commitment to that vote",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Store a commitment privately, to ensure it can be revealed at a later date",
+                "operationId": "store-commitment",
+                "parameters": [
+                    {
+                        "description": "The (about to be) committed vote details data you would like to store",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/database.CommitmentBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/database.Response"
+                        }
+                    },
+                    "406": {
+                        "description": "Bad payload",
+                        "schema": {
+                            "$ref": "#/definitions/database.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "database.CommitmentBody": {
+            "type": "object",
+            "properties": {
+                "commitHash": {
+                    "type": "string",
+                    "example": "0x12345678909876543210123456789012"
+                },
+                "pollID": {
+                    "type": "string",
+                    "example": "0x12345678901234567890123456789012"
+                },
+                "salt": {
+                    "type": "integer",
+                    "example": 5866984321541876564
+                },
+                "voteOption": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "voterAddress": {
+                    "type": "string",
+                    "example": "0x11223344556677889900"
+                }
+            }
+        },
+        "database.Response": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "vote will be revealed when voting closes"
+                }
+            }
+        }
+    }
+}

@@ -58,6 +58,19 @@ jobs:
           name: Wait for db
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: go test
+  swag:
+    docker:
+      - image: circleci/golang:1.13
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+      - run: go get -u github.com/swaggo/swag/cmd/swag
+      - run: swag init
+      - run:
+          name: Check if any changes were created that should have been checked in - only the timestamp line should havve changed
+          command: "[[ $(git diff --numstat -- docs/docs.go | cut -f 1) -eq 1 ]] || exit -1" # check how many lines changed - should just be the timestamp
   deploy-tokens-staging:
     machine:
       enabled: true
@@ -105,6 +118,9 @@ workflows:
   build_and_test:
     jobs:
       - build
+      - swag:
+          requires:
+            - build
       - test:
           requires:
             - build
