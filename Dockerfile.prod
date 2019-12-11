@@ -1,0 +1,20 @@
+FROM golang:1.13-alpine as build-env
+MAINTAINER Greg Taschuk
+WORKDIR /truset-revealer
+RUN apk add --no-cache gcc musl-dev linux-headers
+
+# Gather dependencies before building the code, so that we don't re-gather them for every code change
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+# Now build
+RUN go build -o ./main .
+
+
+FROM alpine:3.10
+COPY --from=build-env /truset-revealer/main .
+EXPOSE 8080
+
+CMD ["./main", "-s", "api"]
