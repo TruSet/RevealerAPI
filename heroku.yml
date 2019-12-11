@@ -1,0 +1,9 @@
+build:
+  docker:
+    web: Dockerfile.prod
+run:
+  web: ./main -s api
+  worker:
+    command:
+      - ./main -s reveal
+    image: web
