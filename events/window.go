@@ -18,7 +18,7 @@ var (
 func CurrentBlockNumber() uint64 {
 	if time.Since(currentBlockNumberLastQueriedAt).Seconds() >= MinSecondsBetweenBlockNumberRequests {
 		// Update the block number
-		header, err := client.HeaderByNumber(context.Background(), nil)
+		header, err := futureClient.HeaderByNumber(context.Background(), nil)
 		if err != nil {
 			raven.CaptureError(err, nil)
 			// If we cannot get the block number, just log and return the last known block number

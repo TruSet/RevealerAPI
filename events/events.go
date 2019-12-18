@@ -34,8 +34,9 @@ var (
 	contractCallSession               *contract.TruSetCommitRevealVotingCallerSession
 	boundContract                     *bind.BoundContract
 	from                              common.Address
-	client                            *ethclient.Client
-	clientString                      string
+	futureClient                      *ethclient.Client
+	pastClient                        *ethclient.Client
+	clientStringFutureEvents          string
 	processingPastEvents              bool
 )
 
@@ -91,7 +92,8 @@ func revealTransactionOpts(client *ethclient.Client) *bind.TransactOpts {
 	return auth
 }
 
-func dialClient(_clientString string) {
+func dialClient(_clientString string) *ethclient.Client {
+	var client *ethclient.Client
 	var err error
 
 	log.Println("Dialling client:", _clientString)
@@ -101,12 +103,15 @@ func dialClient(_clientString string) {
 	if err != nil {
 		log.Fatalf("Failed to connect to the Ethereum client %v: %v", _clientString, err)
 	}
+
+	return client
 }
 
-func Init(_clientString string, commitRevealVotingAddress string) {
+func Init(_clientStringFutureEvents string, clientStringPastEvents string, commitRevealVotingAddress string) {
 	commitRevealVotingContractAddress = common.HexToAddress(commitRevealVotingAddress)
-	clientString = _clientString
-	dialClient(clientString)
+	clientStringFutureEvents = _clientStringFutureEvents
+	futureClient = dialClient(clientStringFutureEvents)
+	pastClient = dialClient(clientStringPastEvents)
 	processingPastEvents = false
 
 	topics = [][]common.Hash{{
@@ -118,8 +123,8 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 		PollCreatedLogTopic,
 		RevealPeriodStartedLogTopic}}
 
-	votingContract, _ := contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, client)
-	opts := revealTransactionOpts(client)
+	votingContract, _ := contract.NewTruSetCommitRevealVoting(commitRevealVotingContractAddress, futureClient)
+	opts := revealTransactionOpts(futureClient)
 
 	votingSession = &contract.TruSetCommitRevealVotingSession{
 		Contract:     votingContract,
@@ -130,7 +135,7 @@ func Init(_clientString string, commitRevealVotingAddress string) {
 	commitRevealVotingABI, _ := abi.JSON(strings.NewReader(contract.TruSetCommitRevealVotingABI))
 	boundContract = bind.NewBoundContract(commitRevealVotingContractAddress, commitRevealVotingABI, nil, nil, nil)
 
-	votingContractCaller, _ := contract.NewTruSetCommitRevealVotingCaller(commitRevealVotingContractAddress, client)
+	votingContractCaller, _ := contract.NewTruSetCommitRevealVotingCaller(commitRevealVotingContractAddress, futureClient)
 
 	contractCallSession = &contract.TruSetCommitRevealVotingCallerSession{
 		Contract: votingContractCaller,
@@ -207,13 +212,13 @@ func processPastEventWindow(fromBlock uint64, toBlock uint64) error {
 	}
 
 	// get past logs
-	logs, err := client.FilterLogs(context.Background(), filter)
+	logs, err := pastClient.FilterLogs(context.Background(), filter)
 	if err != nil {
 		return err
 	}
 
 	for _, l := range logs {
-		processLog(client, ctx, l)
+		processLog(pastClient, ctx, l)
 	}
 
 	log.Println("End of existing logs")
@@ -259,7 +264,7 @@ func ProcessFutureEvents() {
 		// subscribe for new logs
 		// TODO: how to handle chain rollbacks and the resulting invalid logs? Probably monitor even status.
 		ch := make(chan types.Log, 100)
-		sub, err := client.SubscribeFilterLogs(ctx, filter, ch)
+		sub, err := futureClient.SubscribeFilterLogs(ctx, filter, ch)
 		if err != nil {
 			log.Fatal(err)
 			return
@@ -281,7 +286,7 @@ func ProcessFutureEvents() {
 				raven.CaptureError(err, map[string]string{"message": msg, "startedAt": subscriptionTime.String()})
 				break pollingLoop
 			case l := <-ch:
-				processLog(client, ctx, l)
+				processLog(futureClient, ctx, l)
 			}
 		}
 		log.Println("Log subscription terminated")
@@ -294,7 +299,7 @@ func ProcessFutureEvents() {
 			time.Sleep(time.Duration(10) * time.Second)
 		}
 
-		dialClient(clientString)
+		futureClient = dialClient(clientStringFutureEvents)
 	}
 	log.Println("Log subscription terminated permanently.")
 }
