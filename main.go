@@ -49,6 +49,7 @@ var rinkeby bool
 func main() {
 	service := flag.String("s", "reveal", "Service should be 'api' or 'reveal' to indicate whether this is a REST api that accepts delegated reveals, or a 'revealer' service that reveals votes made to a voting contract")
 	ethereumRpc := flag.String("rpc", os.Getenv("ETHEREUM_RPC"), "The rpc endpoint of your ethereum client (defaults to ETHEREUM_RPC env var)")
+	ethereumRpcPastEvents := flag.String("rpcpast", os.Getenv("ETHEREUM_RPC_PAST_EVENTS"), "Specify the rpc endpoint of your ethereum client (defaults to ETHEREUM_RPC_PAST_EVENTS env var)")
 	postgresUri := flag.String("db", os.Getenv("DATABASE_URL"), "The postgres database endpoint (defaults to DATABASE_URL env var)")
 	commitRevealVotingContractAddress := flag.String("crv", os.Getenv("CRV_ADDRESS"), "The address of the CommitRevealVoting contract (defaults to CRV_ADDRESS env var)")
 
@@ -66,6 +67,10 @@ func main() {
 		log.Fatal("No -rpc flag or ETHEREUM_RPC specified (wss://..., *.ipc)")
 	}
 
+	if *service == "reveal" && *ethereumRpcPastEvents == "" {
+		log.Fatal("No -rpcpast flag or ETHEREUM_RPC_PAST_EVENTS specified (https://..., *.ipc)")
+	}
+
 	defer log.Printf("Shutting down TruSet Revealer %v service", *service)
 
 	// Open a database connection, and close it when we are terminated
@@ -78,7 +83,7 @@ func main() {
 
 	switch *service {
 	case "reveal":
-		events.Init(*ethereumRpc, *commitRevealVotingContractAddress)
+		events.Init(*ethereumRpc, *ethereumRpcPastEvents, *commitRevealVotingContractAddress)
 		log.Printf("Listening to CRV contract at %v", *commitRevealVotingContractAddress)
 
 		// Read data from all past events and reveal any we have not already revealed.
