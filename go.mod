@@ -3,7 +3,7 @@ module github.com/TruSet/RevealerAPI
 go 1.13
 
 require (
-	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc
+	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20191023202215-f096da5361bb // indirect
 	github.com/btcsuite/btcd v0.20.1-beta // indirect
@@ -41,7 +41,7 @@ require (
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/swaggo/gin-swagger v1.2.0
-	github.com/swaggo/swag v1.5.1
+	github.com/swaggo/swag v1.6.7
 	github.com/syndtr/goleveldb v0.0.0-20190923125748-758128399b1d // indirect
 	github.com/tyler-smith/go-bip39 v1.0.2 // indirect
 	github.com/ugorji/go v1.1.7 // indirect
