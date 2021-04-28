@@ -1,0 +1,16 @@
+version: 2
+updates:
+- package-ecosystem: gomod
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "10:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: github.com/ethereum/go-ethereum
+    versions:
+    - 1.10.0
+    - 1.9.25
+  - dependency-name: github.com/lib/pq
+    versions:
+    - 1.9.0
